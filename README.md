@@ -90,9 +90,7 @@ dorm.html → 所有页面可达
 | 平静 | `#5B7A8C` | 灰蓝色 |
 | 冰封 | `#4A4A4A` | 炭灰色 |
 
-**字体**：Playfair Display（标题）+ Space Mono（标签/数据）+ Noto Serif SC（正文）
 
-**设计禁忌**：禁止蓝紫色 · 禁止渐变背景 · 禁止现代扁平化风格 · 禁止 emoji（元素图标除外）
 
 ---
 
