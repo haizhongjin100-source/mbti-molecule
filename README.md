@@ -13,7 +13,8 @@
 以化学实验报告的形式呈现——反应方程式、温度计、剧烈程度、沟通模式、相处建议……
 把严肃的人格分析变成一次有趣的实验。
 
-**→ [立即体验（双击 index.html 即可）](#-本地部署)**
+**→ [立即体验：mbti.haizhongjin.space](https://mbti.haizhongjin.space)**
+**→ [或双击 index.html 本地打开](#-本地部署)**
 
 </div>
 
