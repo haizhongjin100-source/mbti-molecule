@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI分子 - 宿舍兼容性测试</title>
+    <meta name="description" content="输入室友们的MBTI，分析宿舍氛围、潜在冲突、相处建议。专为大学生打造的MBTI社交工具。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="MBTI分子 - 宿舍兼容性测试">
+    <meta property="og:description" content="输入室友们的MBTI，分析宿舍氛围、潜在冲突和相处建议。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MBTI分子 - 宿舍兼容性测试">
+    <meta name="twitter:description" content="输入室友们的MBTI，分析宿舍氛围、潜在冲突和相处建议。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8;
+            --dark: #1A1A1A;
+            --accent: #C45C3E;
+            --green: #3D5A4C;
+            --text: #2D2A26;
+            --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+        .subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            letter-spacing: 0.25em;
+            margin-top: 6px;
+        }
+        .nav-links {
+            display: flex; justify-content: center; gap: 12px;
+            margin-top: 15px; flex-wrap: wrap;
+        }
+        .nav-links a {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub);
+            text-decoration: none; letter-spacing: 0.1em;
+            padding: 5px 12px; border: 1px solid rgba(45,42,38,0.2);
+            transition: all 0.2s;
+        }
+        .nav-links a:hover { border-color: var(--accent); color: var(--accent); }
+        .divider {
+            text-align: center; margin: 25px 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem; color: var(--text-sub);
+            opacity: 0.5; letter-spacing: 0.5em;
+        }
+        .section-box {
+            background: var(--bg);
+            border: 1px solid var(--text);
+            padding: 35px 30px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .section-box::before {
+            content: attr(data-label);
+            position: absolute; top: -8px; left: 20px;
+            background: var(--bg); padding: 0 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem; color: var(--text-sub);
+            letter-spacing: 0.15em;
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem; font-weight: 700;
+            margin-bottom: 20px; text-align: center;
+            letter-spacing: 0.05em;
+        }
+
+        /* Add member form */
+        .add-row {
+            display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .add-field { flex: 1; min-width: 100px; }
+        .add-field label {
+            display: block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem; color: var(--text-sub);
+            letter-spacing: 0.15em; margin-bottom: 6px;
+        }
+        .add-field input, .add-field select {
+            width: 100%; padding: 10px 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem; border: 1px solid var(--text);
+            background: rgba(255,255,255,0.3); color: var(--text);
+            outline: none;
+        }
+        .add-field input:focus, .add-field select:focus {
+            border-color: var(--accent);
+        }
+        button {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem; letter-spacing: 0.15em;
+            padding: 10px 22px; border: 1px solid var(--text);
+            background: transparent; color: var(--text);
+            cursor: pointer; transition: all 0.2s;
+        }
+        button:hover { border-color: var(--accent); color: var(--accent); }
+        button.primary {
+            background: var(--accent); color: #fff; border-color: var(--accent);
+        }
+        button.primary:hover { background: #a94a30; }
+
+        /* Member cards */
+        .members-row {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
+        }
+        .member-card {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px; border: 1px solid rgba(45,42,38,0.3);
+            background: rgba(255,255,255,0.2);
+            font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            animation: fadeUp 0.3s ease-out;
+        }
+        .member-card .mc-icon { font-size: 1rem; }
+        .member-card .mc-name { font-weight: 700; }
+        .member-card .mc-type { color: var(--accent); }
+        .member-card .mc-remove {
+            cursor: pointer; color: var(--text-sub);
+            margin-left: 4px; font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .member-card .mc-remove:hover { color: var(--accent); }
+
+        .member-count {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub);
+            text-align: center; margin-top: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        /* Results */
+        .result-section {
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+            animation: fadeUp 0.5s ease-out;
+        }
+        .result-block {
+            margin-bottom: 25px;
+        }
+        .result-block h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem; letter-spacing: 0.15em;
+            color: var(--accent); margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(196,92,62,0.3);
+        }
+        .result-block p, .result-block li {
+            font-size: 0.9rem; line-height: 1.8;
+        }
+        .result-block ul {
+            list-style: none; padding: 0;
+        }
+        .result-block li {
+            padding: 6px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+        .result-block li::before {
+            content: '\2022';
+            position: absolute; left: 0;
+            color: var(--accent);
+        }
+
+        /* Atmosphere */
+        .atmo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px; margin-bottom: 12px;
+        }
+        .atmo-item {
+            padding: 12px 14px;
+            border: 1px solid rgba(45,42,38,0.2);
+            background: rgba(255,255,255,0.15);
+        }
+        .atmo-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem; color: var(--text-sub);
+            letter-spacing: 0.1em; margin-bottom: 4px;
+        }
+        .atmo-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem; font-weight: 700;
+            color: var(--green);
+        }
+        .atmo-summary {
+            text-align: center; padding: 15px;
+            border: 1px solid var(--accent);
+            background: rgba(196,92,62,0.05);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem; font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Conflict warning */
+        .conflict-item {
+            padding: 12px 16px; margin-bottom: 10px;
+            border-left: 3px solid var(--accent);
+            background: rgba(196,92,62,0.04);
+        }
+        .conflict-header {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem; font-weight: 700;
+            color: var(--accent); margin-bottom: 4px;
+        }
+        .conflict-reason {
+            font-size: 0.85rem; color: var(--text);
+            line-height: 1.6; margin-bottom: 4px;
+        }
+        .conflict-tip {
+            font-size: 0.8rem; color: var(--text-sub);
+            font-style: italic;
+        }
+
+        /* Task assignment */
+        .task-item {
+            display: flex; align-items: baseline;
+            gap: 10px; padding: 8px 0;
+            border-bottom: 1px dashed rgba(45,42,38,0.15);
+            font-size: 0.85rem;
+        }
+        .task-name {
+            font-weight: 700; min-width: 60px;
+        }
+        .task-role {
+            color: var(--green);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Personal tips */
+        .tip-card {
+            padding: 10px 14px; margin-bottom: 8px;
+            border: 1px solid rgba(45,42,38,0.15);
+            background: rgba(255,255,255,0.1);
+        }
+        .tip-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--accent); margin-bottom: 4px;
+        }
+        .tip-text {
+            font-size: 0.85rem; color: var(--text);
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center; margin-top: 40px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub);
+            letter-spacing: 0.1em;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .section-box { padding: 25px 15px; }
+            .add-row { flex-direction: column; }
+            .atmo-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header role="banner">
+            <h1>宿舍兼容性测试</h1>
+            <p class="subtitle">ROOMMATE COMPATIBILITY TEST</p>
+            <nav class="nav-links" aria-label="主导航">
+                <a href="index.html">⚗ 化学反应</a>
+                <a href="quiz.html">⚗ 人格鉴定</a>
+                <a href="combos.html">◇ 组合全览</a>
+                <a href="ranking.html">★ CP排行榜</a>
+                <a href="molecule.html">◎ 分子图谱</a>
+                <a href="portrait.html">✦ 人格画像</a>
+                <a href="periodic.html">⬡ 周期表</a>
+            </nav>
+        </header>
+
+        <div class="divider">─═══⚗️═══─</div>
+
+        <div class="section-box" data-label="添加成员">
+            <div class="section-title">添加室友</div>
+            <div class="add-row">
+                <div class="add-field">
+                    <label>姓名</label>
+                    <input type="text" id="memberName" placeholder="输入姓名" maxlength="8">
+                </div>
+                <div class="add-field">
+                    <label>MBTI</label>
+                    <select id="memberType">
+                        <option value="">选择类型</option>
+                    </select>
+                </div>
+                <button class="primary" onclick="addMember()">添加</button>
+            </div>
+            <div class="members-row" id="membersRow"></div>
+            <div class="member-count" id="memberCount">已添加 0 / 8 人</div>
+            <div style="text-align:center;margin-top:15px;">
+                <button class="primary" onclick="analyzeDorm()" style="padding:12px 40px;font-size:0.8rem">开始分析</button>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="divider">─═══⚗️═══─</div>
+
+            <div class="section-box" data-label="宿舍氛围判定">
+                <div id="atmosphereResult"></div>
+            </div>
+
+            <div class="section-box" data-label="冲突预警">
+                <div id="conflictResult"></div>
+            </div>
+
+            <div class="section-box" data-label="作息兼容分析">
+                <div id="scheduleResult"></div>
+            </div>
+
+            <div class="section-box" data-label="任务分配建议">
+                <div id="taskResult"></div>
+            </div>
+
+            <div class="section-box" data-label="专属相处贴士">
+                <div id="tipsResult"></div>
+            </div>
+        </div>
+
+        <footer role="contentinfo">
+            <p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p>
+        </footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+    var members = [];
+
+    // Populate type selector
+    (function() {
+        var sel = document.getElementById('memberType');
+        var types = Object.keys(mbtiNames);
+        types.forEach(function(t) {
+            var opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = mbtiElements[t] + ' ' + t + ' ' + mbtiNames[t];
+            sel.appendChild(opt);
+        });
+    })();
+
+    function addMember() {
+        if (members.length >= 8) { alert('最多添加 8 人'); return; }
+        var name = document.getElementById('memberName').value.trim();
+        var type = document.getElementById('memberType').value;
+        if (!name) { alert('请输入姓名'); return; }
+        if (!type) { alert('请选择 MBTI 类型'); return; }
+        members.push({ name: name, type: type });
+        document.getElementById('memberName').value = '';
+        document.getElementById('memberType').value = '';
+        renderMembers();
+    }
+
+    function removeMember(idx) {
+        members.splice(idx, 1);
+        renderMembers();
+    }
+
+    function renderMembers() {
+        var row = document.getElementById('membersRow');
+        row.innerHTML = members.map(function(m, i) {
+            return '<div class="member-card">' +
+                '<span class="mc-icon">' + mbtiElements[m.type] + '</span>' +
+                '<span class="mc-name">' + m.name + '</span>' +
+                '<span class="mc-type">' + m.type + '</span>' +
+                '<span class="mc-remove" onclick="removeMember(' + i + ')" title="移除">×</span>' +
+                '</div>';
+        }).join('');
+        document.getElementById('memberCount').textContent =
+            '已添加 ' + members.length + ' / 8 人';
+    }
+
+    // --- Analysis Logic ---
+    function analyzeDorm() {
+        if (members.length < 2) { alert('请至少添加 2 人'); return; }
+
+        var result = document.getElementById('resultSection');
+        result.classList.remove('show');
+        void result.offsetWidth;
+        result.classList.add('show');
+
+        analyzeAtmosphere();
+        analyzeConflicts();
+        analyzeSchedule();
+        analyzeTasks();
+        analyzeTips();
+
+        result.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- Atmosphere ---
+    function analyzeAtmosphere() {
+        var eCount = 0, iCount = 0, sCount = 0, nCount = 0;
+        var tCount = 0, fCount = 0, jCount = 0, pCount = 0;
+
+        members.forEach(function(m) {
+            var t = m.type;
+            if (t[0] === 'E') eCount++; else iCount++;
+            if (t[1] === 'S') sCount++; else nCount++;
+            if (t[2] === 'T') tCount++; else fCount++;
+            if (t[3] === 'J') jCount++; else pCount++;
+        });
+
+        var total = members.length;
+
+        // Energy
+        var energyLabel, energyDesc;
+        if (eCount > iCount) {
+            energyLabel = '外向型主导 (' + eCount + ':' + iCount + ')';
+            energyDesc = '室友偏热闹，喜欢组织活动';
+        } else if (iCount > eCount) {
+            energyLabel = '内向型主导 (' + iCount + ':' + eCount + ')';
+            energyDesc = '室友偏安静，喜欢独处或小组交流';
+        } else {
+            energyLabel = '能量均衡 (' + eCount + ':' + iCount + ')';
+            energyDesc = '内外向均衡，动静皆宜';
+        }
+
+        // Decision
+        var decisionLabel, decisionDesc;
+        if (tCount > fCount) {
+            decisionLabel = '理性型主导 (' + tCount + ':' + fCount + ')';
+            decisionDesc = '决策偏理性，效率高但需注意人文关怀';
+        } else if (fCount > tCount) {
+            decisionLabel = '情感型主导 (' + fCount + ':' + tCount + ')';
+            decisionDesc = '氛围温馨和谐，但重大决定可能拖延';
+        } else {
+            decisionLabel = '决策均衡 (' + tCount + ':' + fCount + ')';
+            decisionDesc = '理性与感性并重，沟通节奏好';
+        }
+
+        // Rhythm
+        var rhythmLabel, rhythmDesc;
+        if (jCount > pCount) {
+            rhythmLabel = '计划型主导 (' + jCount + ':' + pCount + ')';
+            rhythmDesc = '作息规律，喜欢提前规划';
+        } else if (pCount > jCount) {
+            rhythmLabel = '灵活型主导 (' + pCount + ':' + jCount + ')';
+            rhythmDesc = '作息弹性大，随性而行';
+        } else {
+            rhythmLabel = '节奏均衡 (' + jCount + ':' + pCount + ')';
+            rhythmDesc = '规划与灵活并存';
+        }
+
+        // Overall atmosphere
+        var atmoTypes = [
+            { name: '☀️ 阳光型宿舍', cond: eCount >= 2 && fCount >= 2 },
+            { name: '☕ 沉思型宿舍', cond: iCount >= 2 && tCount >= 2 },
+            { name: '🌿 自然型宿舍', cond: pCount >= 2 && nCount >= 2 },
+            { name: '📚 学霸型宿舍', cond: jCount >= 2 && tCount >= 2 },
+            { name: '🌟 多元融合型', cond: true }
+        ];
+        var atmoName = atmoTypes.find(function(a) { return a.cond; }).name;
+
+        document.getElementById('atmosphereResult').innerHTML =
+            '<div class="atmo-grid">' +
+            '<div class="atmo-item"><div class="atmo-label">能量分布</div><div class="atmo-val">' + energyLabel + '</div><div style="font-size:0.75rem;color:var(--text-sub);margin-top:2px">' + energyDesc + '</div></div>' +
+            '<div class="atmo-item"><div class="atmo-label">决策风格</div><div class="atmo-val">' + decisionLabel + '</div><div style="font-size:0.75rem;color:var(--text-sub);margin-top:2px">' + decisionDesc + '</div></div>' +
+            '<div class="atmo-item"><div class="atmo-label">生活节奏</div><div class="atmo-val">' + rhythmLabel + '</div><div style="font-size:0.75rem;color:var(--text-sub);margin-top:2px">' + rhythmDesc + '</div></div>' +
+            '</div>' +
+            '<div class="atmo-summary">' + atmoName + '</div>' +
+            '<div style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text-sub)">' +
+            members.map(function(m) { return mbtiElements[m.type] + ' ' + m.name + '(' + m.type + ')'; }).join(' · ') +
+            '</div>';
+    }
+
+    // --- Conflicts ---
+    function analyzeConflicts() {
+        var conflicts = [];
+        for (var i = 0; i < members.length; i++) {
+            for (var j = i + 1; j < members.length; j++) {
+                var key1 = members[i].type + '×' + members[j].type;
+                var key2 = members[j].type + '×' + members[i].type;
+                var data = reactions[key1] || reactions[key2];
+                if (data && data.conflict >= 55) {
+                    conflicts.push({
+                        a: members[i], b: members[j],
+                        conflict: data.conflict,
+                        title: data.title,
+                        desc: data.desc,
+                        tips: data.tips
+                    });
+                }
+            }
+        }
+        conflicts.sort(function(a, b) { return b.conflict - a.conflict; });
+        var top3 = conflicts.slice(0, 3);
+
+        var html;
+        if (top3.length === 0) {
+            html = '<p style="text-align:center;color:var(--green);padding:15px">✓ 当前组合未检测到显著冲突，室友们兼容性较好！</p>';
+        } else {
+            html = top3.map(function(c) {
+                return '<div class="conflict-item">' +
+                    '<div class="conflict-header">⚠️ ' + c.a.name + '(' + c.a.type + ') × ' + c.b.name + '(' + c.b.type + ') — 冲突指数 ' + c.conflict + '%</div>' +
+                    '<div class="conflict-reason">' + c.title + '：' + c.desc.substring(0, 80) + '...</div>' +
+                    '<div class="conflict-tip">建议：' + c.tips.substring(0, 60) + '...</div>' +
+                    '</div>';
+            }).join('');
+        }
+        document.getElementById('conflictResult').innerHTML = html;
+    }
+
+    // --- Schedule ---
+    function analyzeSchedule() {
+        var jCount = 0, pCount = 0;
+        members.forEach(function(m) {
+            if (m.type[3] === 'J') jCount++; else pCount++;
+        });
+        var total = members.length;
+        var html = '<div class="result-block"><h3>作息兼容分析</h3>';
+
+        if (jCount === total) {
+            html += '<ul><li>全 J 宿舍：大家都喜欢规律作息，宿舍秩序优秀</li>' +
+                '<li>建议：提前约定作息时间表，但也要允许偶尔的弹性放松</li></ul>';
+        } else if (pCount === total) {
+            html += '<ul><li>全 P 宿舍：大家都随性而行，氛围轻松自由</li>' +
+                '<li>建议：还是需要一个基本的作息约定，避免互相干扰</li></ul>';
+        } else {
+            html += '<ul><li>J 型 ' + jCount + ' 人 / P 型 ' + pCount + ' 人：混合型宿舍</li>' +
+                '<li>需要制定"静音协议"：约定晚间安静时段，尊重 J 型室友的规律需求</li>' +
+                '<li>P 型室友应尽量避免在休息时间大声活动，J 型室友也要包容 P 型的灵活节奏</li></ul>';
+        }
+
+        // Best pair analysis
+        var bestPair = null, bestMatch = 0;
+        for (var i = 0; i < members.length; i++) {
+            for (var j = i + 1; j < members.length; j++) {
+                var key1 = members[i].type + '×' + members[j].type;
+                var key2 = members[j].type + '×' + members[i].type;
+                var data = reactions[key1] || reactions[key2];
+                if (data && data.match > bestMatch) {
+                    bestMatch = data.match;
+                    bestPair = { a: members[i], b: members[j], data: data };
+                }
+            }
+        }
+        if (bestPair) {
+            html += '<div style="margin-top:15px;padding:12px;border:1px dashed var(--green);background:rgba(61,90,76,0.04)">' +
+                '<div style="font-family:Space Mono,monospace;font-size:0.6rem;color:var(--green);letter-spacing:0.1em;margin-bottom:4px">最佳室友组合</div>' +
+                '<div style="font-size:0.9rem">' + mbtiElements[bestPair.a.type] + ' ' + bestPair.a.name + '(' + bestPair.a.type + ') + ' +
+                mbtiElements[bestPair.b.type] + ' ' + bestPair.b.name + '(' + bestPair.b.type + ')</div>' +
+                '<div style="font-size:0.8rem;color:var(--text-sub);margin-top:4px">匹配度 ' + bestPair.data.match + '% · ' + bestPair.data.title + '</div></div>';
+        }
+
+        html += '</div>';
+        document.getElementById('scheduleResult').innerHTML = html;
+    }
+
+    // --- Tasks ---
+    function analyzeTasks() {
+        var taskMap = {
+            'ESTJ': '统筹协调、值日排班',
+            'ISTJ': '账目记录、公共财务管理',
+            'ENTJ': '长期规划、重大决策参谋',
+            'INTJ': '战略规划、学习计划制定',
+            'ESFJ': '氛围布置、节日活动组织',
+            'ISFJ': '清洁检查、物品采购清单',
+            'ENFJ': '矛盾调解、室友关系维护',
+            'INFJ': '深度讨论发起人、室友情绪关注',
+            'ESTP': '快速维修、突发事件处理',
+            'ISTP': '硬件维修、技术问题解决',
+            'ENTP': '创意提案、新鲜玩法发明',
+            'INTP': '深度研究、复杂问题分析',
+            'ESFP': '娱乐组织、宿舍活动策划',
+            'ISFP': '美学布置、宿舍氛围营造',
+            'ENFP': '灵感激发、社交活动发起',
+            'INFP': '室友关怀、内心感受倾听'
+        };
+
+        var html = '<div class="result-block"><h3>任务分配建议</h3>';
+        members.forEach(function(m) {
+            var role = taskMap[m.type] || '灵活支援';
+            html += '<div class="task-item">' +
+                '<span class="task-name">' + mbtiElements[m.type] + ' ' + m.name + '</span>' +
+                '<span class="task-role">' + role + '</span></div>';
+        });
+        html += '</div>';
+        document.getElementById('taskResult').innerHTML = html;
+    }
+
+    // --- Tips ---
+    function analyzeTips() {
+        var frictionMap = {
+            'ESTJ': '偶尔放松控制欲，允许室友用自己的方式做事',
+            'ISTJ': '试着接受一些计划外的变化，室友不是在针对你',
+            'ENTJ': '用"我觉得"代替"你应该"，让室友更舒服',
+            'INTJ': '偶尔分享你的想法，室友其实很想了解你',
+            'ESFJ': '别把所有人的情绪都背在自己身上，也要关注自己',
+            'ISFJ': '有需要时直接说出来，室友不一定能猜到你的感受',
+            'ENFJ': '给室友留出独处的空间和时间，不是每个人都需要时刻互动',
+            'INFJ': '别总是独自承受压力，适时向室友寻求帮助',
+            'ESTP': '注意控制音量和动静，尤其是在休息时间',
+            'ISTP': '多主动回应室友的消息，别让人觉得你不在乎',
+            'ENTP': '减少无意义的争论，尊重室友的不同观点',
+            'INTP': '偶尔从思考中抽离出来，参与室友的集体活动',
+            'ESFP': '尊重室友的私人空间，不是每时每刻都需要派对',
+            'ISFP': '适当表达你的需求，室友并不能读懂你的沉默',
+            'ENFP': '集中注意力完成家务，别总是凭热情跳过细节',
+            'INFP': '接受不完美的现实，室友的习惯不一定是针对你'
+        };
+
+        var html = '<div class="result-block"><h3>专属相处贴士</h3>';
+        members.forEach(function(m) {
+            var tip = frictionMap[m.type] || '做自己，就很好';
+            html += '<div class="tip-card">' +
+                '<div class="tip-name">' + mbtiElements[m.type] + ' ' + m.name + ' (' + m.type + ' ' + mbtiNames[m.type] + ')</div>' +
+                '<div class="tip-text">' + tip + '</div></div>';
+        });
+        html += '</div>';
+        document.getElementById('tipsResult').innerHTML = html;
+    }
+    </script>
+</body>
+</html>

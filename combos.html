@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组合全览 - MBTI分子</title>
+    <meta name="description" content="选择一个MBTI人格，查看与所有16种类型的化学反应摘要。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="组合全览 - MBTI分子">
+    <meta property="og:description" content="选择一个MBTI人格，查看与所有16种类型的化学反应摘要。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="组合全览 - MBTI分子">
+    <meta name="twitter:description" content="选择一个MBTI人格，查看与所有16种类型的化学反应摘要。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif; background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 40px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 800px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+        header { text-align: center; margin-bottom: 10px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .subtitle { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.2em; }
+        .divider { text-align: center; margin: 25px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+        .selector-section { margin-bottom: 10px; }
+        .selector-label { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.15em; text-align: center; margin-bottom: 12px; }
+        .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 480px; margin: 0 auto; }
+        .type-btn {
+            display: flex; flex-direction: column; align-items: center; padding: 12px 4px;
+            border: 1px solid rgba(45,42,38,0.2); background: transparent; cursor: pointer;
+            font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text);
+            letter-spacing: 0.05em; transition: all 0.2s; text-decoration: none;
+        }
+        .type-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .type-btn .t-elem { font-size: 1.2rem; margin-bottom: 2px; }
+        .results-header {
+            font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-sub);
+            letter-spacing: 0.15em; text-align: center; margin-bottom: 15px;
+        }
+        .card-list { display: flex; flex-direction: column; gap: 10px; }
+        .combo-card {
+            display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+            border: 1px solid rgba(45,42,38,0.2); cursor: pointer;
+            transition: all 0.2s; text-decoration: none; color: var(--text);
+        }
+        .combo-card:hover { border-color: var(--accent); }
+        .card-type {
+            font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
+            min-width: 70px; text-align: center;
+        }
+        .card-type .ct-elem { font-size: 0.9rem; }
+        .card-type .ct-code { display: block; }
+        .card-info { flex: 1; min-width: 0; }
+        .card-title { font-family: 'Space Mono', monospace; font-size: 0.75rem; margin-bottom: 4px; letter-spacing: 0.05em; }
+        .card-title .intensity-icon { margin-right: 4px; }
+        .card-title .reaction-name { color: var(--accent); }
+        .card-desc { font-size: 0.82rem; color: var(--text-sub); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card-match { min-width: 55px; text-align: center; }
+        .match-val { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; }
+        .match-bar { height: 3px; background: rgba(45,42,38,0.1); margin-top: 4px; }
+        .match-fill { height: 100%; transition: width 0.6s ease; }
+        .no-select { text-align: center; padding: 60px 20px; color: var(--text-sub); font-size: 0.9rem; }
+        footer {
+            text-align: center; margin-top: 60px; padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2); font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.2em;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .type-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .type-btn { padding: 10px 2px; font-size: 0.6rem; }
+            .combo-card { flex-direction: column; gap: 8px; align-items: flex-start; }
+            .card-match { align-self: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="portrait.html" aria-label="人格画像">✦ 人格画像</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+        <header role="banner">
+            <h1>组合全览</h1>
+            <p class="subtitle">选择一个人格，查看与所有类型的化学反应</p>
+        </header>
+        <div class="divider">─═══⚗️═══─</div>
+        <div class="selector-section" role="region" aria-label="人格类型选择器">
+            <div class="selector-label">选择实验样本</div>
+            <div class="type-grid" id="typeGrid" role="listbox" aria-label="16种人格类型"></div>
+        </div>
+        <div class="divider">─═══⚗️═══─</div>
+        <div class="results-header" id="resultsHeader"></div>
+        <div class="card-list" id="cardList" role="list" aria-label="化学反应列表"></div>
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+    <script src="scripts/data.js"></script>
+    <script>
+        var selectedType = null;
+
+        function getInitialType() {
+            var params = new URLSearchParams(window.location.search);
+            return params.get('type') || params.get('mbti1') || null;
+        }
+
+        function renderGrid() {
+            var types = Object.keys(mbtiNames);
+            var grid = document.getElementById('typeGrid');
+            grid.innerHTML = types.map(function(t) {
+                    return '<button class="type-btn' + (t === selectedType ? ' active' : '') +
+                        '" data-type="' + t + '" role="option" aria-selected="' + (t === selectedType ? 'true' : 'false') + '" aria-label="' + t + ' ' + mbtiNames[t] + '">' +
+                        '<span class="t-elem">' + mbtiElements[t] + '</span>' + t + '</button>';
+                }).join('');
+            grid.querySelectorAll('.type-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    selectType(btn.getAttribute('data-type'));
+                });
+            });
+        }
+
+        function selectType(type) {
+            selectedType = type;
+            var url = new URL(window.location);
+            url.searchParams.set('type', type);
+            history.replaceState(null, '', url);
+            renderGrid();
+            renderResults();
+        }
+
+        function getReaction(t1, t2) {
+            return reactions[t1 + '×' + t2] || reactions[t2 + '×' + t1] || null;
+        }
+
+        function renderResults() {
+            var header = document.getElementById('resultsHeader');
+            var list = document.getElementById('cardList');
+            if (!selectedType) {
+                header.textContent = '';
+                list.innerHTML = '<div class="no-select">请先选择一个人格类型</div>';
+                return;
+            }
+            header.textContent = mbtiElements[selectedType] + ' ' + selectedType + ' ' + mbtiNames[selectedType] + ' · 全部化学反应';
+
+            var allTypes = Object.keys(mbtiNames);
+            var combos = [];
+            allTypes.forEach(function(other) {
+                if (other === selectedType) return;
+                var data = getReaction(selectedType, other);
+                if (data) {
+                    combos.push({ type: other, data: data });
+                }
+            });
+            combos.sort(function(a, b) { return b.data.match - a.data.match; });
+
+            if (combos.length === 0) {
+                list.innerHTML = '<div class="no-select">暂无数据</div>';
+                return;
+            }
+
+            list.innerHTML = combos.map(function(c) {
+                var color = intensityColors[c.data.intensity] || intensityColors.mild;
+                var icons = {explosive:'💥',dramatic:'⚡',mild:'✨',calm:'🌊',frozen:'❄️'};
+                var icon = icons[c.data.intensity] || '✨';
+                var desc = c.data.desc.length > 80 ? c.data.desc.substring(0, 80) + '...' : c.data.desc;
+                return '<a class="combo-card" role="listitem" href="index.html?mbti1=' + selectedType + '&mbti2=' + c.type + '" aria-label="' + selectedType + '与' + c.type + '的化学反应">' +
+                    '<div class="card-type"><span class="ct-elem">' + mbtiElements[c.type] + '</span><span class="ct-code">' + c.type + '</span></div>' +
+                    '<div class="card-info">' +
+                    '<div class="card-title"><span class="intensity-icon">' + icon + '</span><span class="reaction-name">' + c.data.title + '</span> · ' + intensityLabels[c.data.intensity] + '</div>' +
+                    '<div class="card-desc">' + desc + '</div>' +
+                    '</div>' +
+                    '<div class="card-match"><div class="match-val" style="color:' + color + '">' + c.data.match + '%</div><div class="match-bar"><div class="match-fill" style="width:' + c.data.match + '%;background:' + color + '"></div></div></div>' +
+                    '</a>';
+            }).join('');
+        }
+
+        var initial = getInitialType();
+        if (initial && mbtiNames[initial]) selectedType = initial;
+        renderGrid();
+        renderResults();
+    </script>
+</body>
+</html>

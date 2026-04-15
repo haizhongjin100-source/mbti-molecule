@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed 's/const //')",
+      "Bash(sed 's/ = .*//')",
+      "Bash(awk '/^const reactions_friendship =/,/^const reactions_romance =/' \"E:/备份/mbti分子/scripts/data.js\")",
+      "Bash(python3 -c ' *)",
+      "Bash(awk '/^const mbtiPersonality =/,0' \"E:/备份/mbti分子/scripts/data.js\")",
+      "Bash(gh auth *)",
+      "Bash(git config *)"
+    ]
+  }
+}

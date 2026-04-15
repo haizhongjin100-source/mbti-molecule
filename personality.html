@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人格详情 - MBTI分子</title>
+    <meta name="description" content="查看MBTI人格类型的完整介绍，包括性格概述、沟通风格、情感模式、职业倾向和成长建议。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="人格详情 - MBTI分子">
+    <meta property="og:description" content="查看MBTI人格类型的完整介绍，包括性格概述、沟通风格、情感模式、职业倾向和成长建议。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="人格详情 - MBTI分子">
+    <meta name="twitter:description" content="查看MBTI人格类型的完整介绍，包括性格概述、沟通风格、情感模式、职业倾向和成长建议。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8;
+            --dark: #1A1A1A;
+            --accent: #C45C3E;
+            --green: #3D5A4C;
+            --text: #2D2A26;
+            --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .back-link {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+            padding: 8px 16px;
+            border: 1px solid rgba(45,42,38,0.2);
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .personality-card {
+            background: var(--bg);
+            border: 1px solid var(--text);
+            padding: 50px 40px;
+            position: relative;
+        }
+
+        .personality-card::before {
+            content: '◇';
+            position: absolute;
+            top: -8px; left: 20px;
+            background: var(--bg);
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .personality-card::after {
+            content: '◇';
+            position: absolute;
+            bottom: -8px; right: 20px;
+            background: var(--bg);
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .p-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .p-element {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .p-character {
+            height: 200px;
+            margin: 0 auto;
+        }
+        .p-character img {
+            height: 100%;
+            width: auto;
+        }
+
+        .p-type {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .p-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            margin-bottom: 8px;
+        }
+
+        .p-category {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-sub);
+            border: 1px dashed var(--text-sub);
+            padding: 4px 12px;
+            letter-spacing: 0.15em;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            opacity: 0.5;
+            letter-spacing: 0.5em;
+        }
+
+        .p-overview {
+            font-size: 1rem;
+            line-height: 2;
+            text-align: center;
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .p-traits {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .p-trait-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px dashed var(--green);
+            color: var(--green);
+            font-size: 0.8rem;
+            margin: 4px;
+        }
+
+        .p-section {
+            margin-bottom: 25px;
+            padding-left: 20px;
+            border-left: 2px solid var(--accent);
+        }
+
+        .p-section-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+        }
+
+        .p-section-content {
+            font-size: 0.92rem;
+            line-height: 1.9;
+        }
+
+        .p-career-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .p-career-item {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(196,92,62,0.1);
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .p-famous-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .p-famous-item {
+            display: inline-block;
+            padding: 5px 12px;
+            border: 1px solid rgba(45,42,38,0.2);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .p-action-row {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px dashed rgba(45,42,38,0.3);
+        }
+
+        .p-action-row button {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 14px 28px;
+            border: 2px solid var(--text);
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .p-action-row button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: var(--dark);
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .p-action-row button:hover::before { left: 0; }
+        .p-action-row button:hover { background: var(--dark); border-color: var(--dark); }
+
+        .p-all-types {
+            margin-top: 40px;
+        }
+
+        .p-all-types h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            letter-spacing: 0.15em;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .p-type-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .p-type-link {
+            display: block;
+            text-align: center;
+            padding: 10px 4px;
+            border: 1px solid rgba(45,42,38,0.2);
+            text-decoration: none;
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .p-type-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .p-type-link.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .p-type-link .link-element {
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-sub);
+            letter-spacing: 0.2em;
+        }
+
+        @media (max-width: 768px) {
+            .personality-card { padding: 35px 20px; }
+            .p-type { font-size: 2.2rem; }
+            .p-type-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .p-type-link { padding: 8px 2px; font-size: 0.6rem; }
+            .p-section { padding-left: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+
+        <div class="personality-card" id="personalityCard" role="article" aria-label="人格详情">
+            <div class="p-header">
+                <div class="p-element" id="pElement"></div>
+                <div class="p-type" id="pType"></div>
+                <div class="p-name" id="pName"></div>
+                <div class="p-category" id="pCategory"></div>
+            </div>
+
+            <div class="divider">─═══⚗️═══─</div>
+
+            <div class="p-overview" id="pOverview"></div>
+            <div class="p-traits" id="pTraits"></div>
+
+            <div class="divider">─═══⚗️═══─</div>
+
+            <div class="p-section">
+                <div class="p-section-title">沟通风格</div>
+                <div class="p-section-content" id="pCommunication"></div>
+            </div>
+
+            <div class="p-section">
+                <div class="p-section-title">情感模式</div>
+                <div class="p-section-content" id="pEmotion"></div>
+            </div>
+
+            <div class="p-section">
+                <div class="p-section-title">职业倾向</div>
+                <div class="p-career-list" id="pCareer"></div>
+            </div>
+
+            <div class="p-section">
+                <div class="p-section-title">成长建议</div>
+                <div class="p-section-content" id="pGrowth"></div>
+            </div>
+
+            <div class="p-section">
+                <div class="p-section-title">可能的摩擦点</div>
+                <div class="p-section-content" id="pFriction"></div>
+            </div>
+
+            <div class="p-section">
+                <div class="p-section-title">代表人物</div>
+                <div class="p-famous-list" id="pFamous"></div>
+            </div>
+
+            <div class="p-action-row">
+                <button onclick="goToReaction()" aria-label="测试此人格的化学反应">⚗ 测试化学反应</button>
+            </div>
+        </div>
+
+        <div class="p-all-types">
+            <h3>全部人格类型</h3>
+            <div class="p-type-grid" id="typeGrid"></div>
+        </div>
+
+        <footer role="contentinfo">
+            <p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p>
+        </footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+        function getType() {
+            var params = new URLSearchParams(window.location.search);
+            return params.get('type') || 'INTJ';
+        }
+
+        function render() {
+            var type = getType();
+            var data = mbtiPersonality[type];
+
+            if (!data) {
+                document.getElementById('personalityCard').innerHTML =
+                    '<div style="text-align:center;padding:60px 20px">' +
+                    '<p style="font-size:1.2rem;margin-bottom:15px">未找到该人格类型</p>' +
+                    '<a href="index.html" style="color:var(--accent)">返回实验室</a></div>';
+                return;
+            }
+
+            document.title = data.name + ' · ' + type + ' - MBTI分子';
+
+            var color = mbtiColors[type] || '#C45C3E';
+
+            // Show the character image (transparent background, no white edges)
+            var elemContainer = document.getElementById('pElement');
+            elemContainer.innerHTML = '<div class="p-character"><img src="images/' + type + '.png" alt="' + type + ' ' + data.name + '"></div>';
+
+            document.getElementById('pType').textContent = type;
+            document.getElementById('pType').style.color = color;
+            document.getElementById('pName').textContent = data.name;
+            document.getElementById('pName').style.color = color;
+            document.getElementById('pCategory').textContent = data.category;
+            document.getElementById('pOverview').textContent = data.overview;
+
+            var traitsHtml = data.traits.map(function(t) {
+                return '<span class="p-trait-tag">' + t + '</span>';
+            }).join('');
+            document.getElementById('pTraits').innerHTML = traitsHtml;
+
+            document.getElementById('pCommunication').textContent = data.communication;
+            document.getElementById('pEmotion').textContent = data.emotion;
+
+            var careerHtml = data.career.map(function(c) {
+                return '<span class="p-career-item">' + c + '</span>';
+            }).join('');
+            document.getElementById('pCareer').innerHTML = careerHtml;
+
+            document.getElementById('pGrowth').textContent = data.growth;
+            document.getElementById('pFriction').textContent = data.friction;
+
+            var famousHtml = data.famous.map(function(f) {
+                return '<span class="p-famous-item">' + f + '</span>';
+            }).join('');
+            document.getElementById('pFamous').innerHTML = famousHtml;
+
+            renderTypeGrid(type);
+        }
+
+        function renderTypeGrid(activeType) {
+            var types = Object.keys(mbtiNames);
+            var grid = document.getElementById('typeGrid');
+            grid.innerHTML = types.map(function(t) {
+                return '<a class="p-type-link' + (t === activeType ? ' active' : '') +
+                    '" href="personality.html?type=' + t + '">' +
+                    '<span class="link-element">' + mbtiElements[t] + '</span>' +
+                    t + '</a>';
+            }).join('');
+        }
+
+        function goToReaction() {
+            var type = getType();
+            window.location.href = 'index.html?mbti1=' + type;
+        }
+
+        render();
+    </script>
+</body>
+</html>

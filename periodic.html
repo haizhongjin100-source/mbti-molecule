@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16型周期表 - MBTI分子</title>
+    <meta name="description" content="以元素周期表形式展示16种MBTI人格，按四大分类分区排列，直观发现相邻类型的关系。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="16型周期表 - MBTI分子">
+    <meta property="og:description" content="以元素周期表形式展示16种MBTI人格，按四大分类分区排列。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="16型周期表 - MBTI分子">
+    <meta name="twitter:description" content="以元素周期表形式展示16种MBTI人格。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+            --cat-analyst: #8B5E7A;
+            --cat-diplomat: #5A7A4C;
+            --cat-sentinel: #4A7A8C;
+            --cat-explorer: #9A7A2A;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 30px 20px 50px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 800px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.05em; }
+        .subtitle { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.2em; margin-top: 6px; }
+        .divider { text-align: center; margin: 20px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+
+        /* Legend */
+        .legend {
+            display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 6px;
+            font-family: 'Space Mono', monospace; font-size: 0.6rem;
+            color: var(--text-sub); letter-spacing: 0.08em;
+        }
+        .legend-dot {
+            width: 12px; height: 12px; border: 1px solid var(--text);
+        }
+
+        /* Axis labels */
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0 10px;
+        }
+
+        .axis-labels {
+            display: flex; margin-bottom: 8px; padding-left: 50px;
+        }
+        .axis-col {
+            flex: 1; text-align: center;
+            font-family: 'Space Mono', monospace; font-size: 0.5rem;
+            color: var(--text-sub); letter-spacing: 0.08em;
+        }
+
+        .periodic-grid {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+
+        .period-row {
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .row-label {
+            width: 44px; text-align: right; padding-right: 6px;
+            font-family: 'Space Mono', monospace; font-size: 0.5rem;
+            color: var(--text-sub); letter-spacing: 0.08em; flex-shrink: 0;
+        }
+
+        .element-cell {
+            flex: 1; min-width: 0;
+            position: relative;
+            border: 1.5px solid var(--text);
+            padding: 10px 6px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            text-decoration: none; color: var(--text);
+            background: var(--bg);
+        }
+        .element-cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.12);
+            z-index: 10;
+        }
+
+        .el-number {
+            position: absolute; top: 3px; left: 5px;
+            font-family: 'Space Mono', monospace; font-size: 0.4rem;
+            color: var(--text-sub); letter-spacing: 0;
+        }
+
+        .el-cat-bar {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .el-icon {
+            font-size: 1.2rem; margin: 4px 0 2px;
+        }
+
+        .el-code {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem; font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .el-name {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.6rem; color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        /* Group separators */
+        .group-gap { width: 12px; flex-shrink: 0; }
+
+        /* Detail popup */
+        .detail-panel {
+            display: none;
+            margin-top: 25px;
+            padding: 24px 28px;
+            border: 2px solid var(--text);
+            background: var(--bg);
+            position: relative;
+            animation: fadeUp 0.3s ease-out;
+        }
+        .detail-panel.show { display: block; }
+        .detail-panel::before {
+            content: '标本详情'; position: absolute; top: -8px; left: 20px;
+            background: var(--bg); padding: 0 8px;
+            font-family: 'Space Mono', monospace; font-size: 0.55rem;
+            color: var(--text-sub); letter-spacing: 0.15em;
+        }
+        .dp-top {
+            display: flex; align-items: center; gap: 20px; margin-bottom: 16px;
+        }
+        .dp-img { width: 80px; height: 80px; object-fit: contain; }
+        .dp-info { flex: 1; }
+        .dp-code {
+            font-family: 'Playfair Display', serif; font-size: 2rem;
+            font-weight: 900; letter-spacing: 0.1em;
+        }
+        .dp-cname {
+            font-family: 'Space Mono', monospace; font-size: 0.75rem;
+            color: var(--accent); letter-spacing: 0.15em; margin-top: 2px;
+        }
+        .dp-category {
+            display: inline-block; font-family: 'Space Mono', monospace;
+            font-size: 0.55rem; color: var(--text-sub);
+            border: 1px dashed var(--text-sub); padding: 2px 8px;
+            letter-spacing: 0.1em; margin-top: 4px;
+        }
+        .dp-desc {
+            font-size: 0.88rem; line-height: 1.9; margin-bottom: 16px;
+        }
+        .dp-traits { text-align: center; margin-bottom: 16px; }
+        .dp-trait-tag {
+            display: inline-block; padding: 4px 10px;
+            border: 1px dashed var(--green); color: var(--green);
+            font-size: 0.75rem; margin: 2px;
+        }
+
+        /* Detail sections */
+        .dp-section {
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed rgba(45,42,38,0.15);
+        }
+        .dp-section:last-of-type { border-bottom: none; }
+
+        .dp-section-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--accent);
+            letter-spacing: 0.15em; margin-bottom: 6px;
+        }
+
+        .dp-section p {
+            font-size: 0.82rem; line-height: 1.85; color: var(--text);
+        }
+
+        .dp-tags {
+            display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .dp-tag {
+            padding: 4px 10px;
+            border: 1px dashed rgba(45,42,38,0.25);
+            font-size: 0.72rem; color: var(--text-sub);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .dp-friction {
+            padding: 10px 14px;
+            border-left: 3px solid var(--accent);
+            background: rgba(196,92,62,0.04);
+            font-size: 0.82rem; line-height: 1.7;
+            color: var(--text);
+        }
+
+        .dp-growth {
+            padding: 10px 14px;
+            border-left: 3px solid var(--green);
+            background: rgba(61,90,76,0.04);
+            font-size: 0.82rem; line-height: 1.7;
+            color: var(--text);
+        }
+
+        .dp-actions {
+            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+        }
+        .dp-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            letter-spacing: 0.1em; padding: 10px 22px;
+            border: 2px solid var(--text); background: transparent;
+            color: var(--text); cursor: pointer; text-decoration: none;
+            transition: all 0.2s; display: inline-block;
+        }
+        .dp-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .dp-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .dp-btn.primary:hover { background: var(--dark); border-color: var(--dark); }
+
+        /* Dimension map */
+        .dim-map {
+            margin-top: 30px; padding: 20px;
+            border: 1px solid rgba(45,42,38,0.2);
+            background: rgba(255,255,255,0.08);
+        }
+        .dm-title {
+            font-family: 'Space Mono', monospace; font-size: 0.6rem;
+            color: var(--text-sub); letter-spacing: 0.15em;
+            margin-bottom: 14px; text-align: center;
+        }
+        .dm-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .dm-pair {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; border: 1px solid rgba(45,42,38,0.12);
+            font-size: 0.8rem;
+        }
+        .dm-letter {
+            font-family: 'Playfair Display', serif; font-size: 1.2rem;
+            font-weight: 700; color: var(--accent); min-width: 22px;
+        }
+        .dm-meaning {
+            font-size: 0.72rem; color: var(--text-sub);
+        }
+
+        footer {
+            text-align: center; margin-top: 50px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.1em;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .element-cell { padding: 6px 3px 5px; }
+            .el-icon { font-size: 0.9rem; }
+            .el-code { font-size: 0.75rem; }
+            .el-name { font-size: 0.5rem; }
+            .el-number { font-size: 0.35rem; }
+            .row-label { width: 32px; font-size: 0.4rem; }
+            .axis-col { font-size: 0.4rem; }
+            .group-gap { width: 6px; }
+            .dp-top { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="portrait.html" aria-label="人格画像">◉ 人格画像</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+
+        <header role="banner">
+            <h1>16型周期表</h1>
+            <p class="subtitle">THE MBTI PERIODIC TABLE</p>
+        </header>
+        <div class="divider">─═══⚗️═══─</div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cat-analyst)"></div>理性者 NT</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cat-diplomat)"></div>理想主义者 NF</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cat-sentinel)"></div>守护者 SJ</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cat-explorer)"></div>探险者 SP</div>
+        </div>
+
+        <!-- Periodic Table -->
+        <div class="table-wrapper">
+            <div class="axis-labels">
+                <div class="axis-col">NT · 理性者</div>
+                <div class="group-gap"></div>
+                <div class="axis-col">NF · 理想主义者</div>
+                <div class="group-gap"></div>
+                <div class="axis-col">SJ · 守护者</div>
+                <div class="group-gap"></div>
+                <div class="axis-col">SP · 探险者</div>
+            </div>
+
+            <div class="periodic-grid" id="periodicGrid"></div>
+        </div>
+
+        <div class="divider">─═══⚗️═══─</div>
+
+        <!-- Detail popup -->
+        <div class="detail-panel" id="detailPanel">
+            <div class="dp-top">
+                <img class="dp-img" id="dpImg" src="" alt="">
+                <div class="dp-info">
+                    <div class="dp-code" id="dpCode"></div>
+                    <div class="dp-cname" id="dpCname"></div>
+                    <div class="dp-category" id="dpCategory"></div>
+                </div>
+            </div>
+            <div class="dp-traits" id="dpTraits"></div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">概述</div>
+                <p id="dpDesc"></p>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">沟通风格</div>
+                <p id="dpComm"></p>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">情感模式</div>
+                <p id="dpEmotion"></p>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">适合领域</div>
+                <div class="dp-tags" id="dpCareer"></div>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">代表人物</div>
+                <div class="dp-tags" id="dpFamous"></div>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">常见摩擦</div>
+                <div class="dp-friction" id="dpFriction"></div>
+            </div>
+
+            <div class="dp-section">
+                <div class="dp-section-title">成长建议</div>
+                <div class="dp-growth" id="dpGrowth"></div>
+            </div>
+
+            <div class="dp-actions">
+                <a class="dp-btn primary" id="dpDetail" href="#">查看完整详情</a>
+                <a class="dp-btn" id="dpCombo" href="#">组合全览</a>
+                <a class="dp-btn" id="dpReact" href="#">测试化学反应</a>
+            </div>
+        </div>
+
+        <!-- Dimension map -->
+        <div class="dim-map">
+            <div class="dm-title">四维度解读</div>
+            <div class="dm-grid">
+                <div class="dm-pair"><span class="dm-letter">E</span><span class="dm-meaning">外向 · 从外界获取能量</span></div>
+                <div class="dm-pair"><span class="dm-letter">I</span><span class="dm-meaning">内向 · 从内心获取能量</span></div>
+                <div class="dm-pair"><span class="dm-letter">S</span><span class="dm-meaning">实感 · 关注具体事实</span></div>
+                <div class="dm-pair"><span class="dm-letter">N</span><span class="dm-meaning">直觉 · 关注抽象可能</span></div>
+                <div class="dm-pair"><span class="dm-letter">T</span><span class="dm-meaning">理性 · 逻辑做决定</span></div>
+                <div class="dm-pair"><span class="dm-letter">F</span><span class="dm-meaning">感性 · 价值做决定</span></div>
+                <div class="dm-pair"><span class="dm-letter">J</span><span class="dm-meaning">计划 · 偏好秩序</span></div>
+                <div class="dm-pair"><span class="dm-letter">P</span><span class="dm-meaning">随性 · 偏好灵活</span></div>
+            </div>
+        </div>
+
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+    // Periodic table layout: 2 rows × 4 groups × 2 cells (E / I)
+    // Row 1: E types   Row 2: I types
+    // Columns: NT | NF | SJ | SP
+    var layout = [
+        // Row label, [E-type, I-type] per group
+        { label: 'E 外向', groups: [
+            { types: ['ENTJ', 'ENTP'], cat: 'cat-analyst' },
+            { types: ['ENFJ', 'ENFP'], cat: 'cat-diplomat' },
+            { types: ['ESTJ', 'ESFJ'], cat: 'cat-sentinel' },
+            { types: ['ESTP', 'ESFP'], cat: 'cat-explorer' }
+        ]},
+        { label: 'I 内向', groups: [
+            { types: ['INTJ', 'INTP'], cat: 'cat-analyst' },
+            { types: ['INFJ', 'INFP'], cat: 'cat-diplomat' },
+            { types: ['ISTJ', 'ISFJ'], cat: 'cat-sentinel' },
+            { types: ['ISTP', 'ISFP'], cat: 'cat-explorer' }
+        ]}
+    ];
+
+    var catColors = {
+        '理性者': 'var(--cat-analyst)',
+        '理想主义者': 'var(--cat-diplomat)',
+        '守护者': 'var(--cat-sentinel)',
+        '探险者': 'var(--cat-explorer)'
+    };
+
+    // Build grid
+    (function() {
+        var grid = document.getElementById('periodicGrid');
+        var num = 1;
+        layout.forEach(function(row) {
+            var rowEl = document.createElement('div');
+            rowEl.className = 'period-row';
+
+            var label = document.createElement('div');
+            label.className = 'row-label';
+            label.textContent = row.label;
+            rowEl.appendChild(label);
+
+            row.groups.forEach(function(group, gi) {
+                if (gi > 0) {
+                    var gap = document.createElement('div');
+                    gap.className = 'group-gap';
+                    rowEl.appendChild(gap);
+                }
+
+                group.types.forEach(function(type) {
+                    var cell = document.createElement('a');
+                    cell.className = 'element-cell';
+                    cell.href = '#';
+                    cell.setAttribute('data-type', type);
+                    cell.setAttribute('aria-label', type + ' ' + mbtiNames[type]);
+
+                    var catBar = document.createElement('div');
+                    catBar.className = 'el-cat-bar';
+                    catBar.style.background = catColors[categories[type]] || 'var(--accent)';
+                    cell.appendChild(catBar);
+
+                    var numEl = document.createElement('div');
+                    numEl.className = 'el-number';
+                    numEl.textContent = num++;
+                    cell.appendChild(numEl);
+
+                    var icon = document.createElement('div');
+                    icon.className = 'el-icon';
+                    icon.textContent = mbtiElements[type];
+                    cell.appendChild(icon);
+
+                    var code = document.createElement('div');
+                    code.className = 'el-code';
+                    code.textContent = type;
+                    cell.appendChild(code);
+
+                    var name = document.createElement('div');
+                    name.className = 'el-name';
+                    name.textContent = mbtiNames[type];
+                    cell.appendChild(name);
+
+                    cell.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showDetail(type);
+                    });
+
+                    rowEl.appendChild(cell);
+                });
+            });
+
+            grid.appendChild(rowEl);
+        });
+    })();
+
+    // Detail panel
+    function showDetail(type) {
+        var data = mbtiPersonality[type];
+        if (!data) return;
+
+        document.getElementById('dpImg').src = 'images/' + type + '.png';
+        document.getElementById('dpImg').alt = type + ' ' + mbtiNames[type];
+        document.getElementById('dpCode').textContent = type;
+        document.getElementById('dpCode').style.color = mbtiColors[type] || 'var(--accent)';
+        document.getElementById('dpCname').textContent = data.name;
+        document.getElementById('dpCategory').textContent = data.category;
+
+        // Traits
+        document.getElementById('dpTraits').innerHTML = data.traits.map(function(t) {
+            return '<span class="dp-trait-tag">' + t + '</span>';
+        }).join('');
+
+        // Overview
+        document.getElementById('dpDesc').textContent = data.overview;
+
+        // Communication
+        document.getElementById('dpComm').textContent = data.communication || '';
+
+        // Emotion
+        document.getElementById('dpEmotion').textContent = data.emotion || '';
+
+        // Career
+        var careerEl = document.getElementById('dpCareer');
+        if (data.career && data.career.length) {
+            careerEl.innerHTML = data.career.map(function(c) {
+                return '<span class="dp-tag">' + c + '</span>';
+            }).join('');
+        } else {
+            careerEl.innerHTML = '';
+        }
+
+        // Famous
+        var famousEl = document.getElementById('dpFamous');
+        if (data.famous && data.famous.length) {
+            famousEl.innerHTML = data.famous.map(function(f) {
+                return '<span class="dp-tag">' + f + '</span>';
+            }).join('');
+        } else {
+            famousEl.innerHTML = '';
+        }
+
+        // Friction
+        document.getElementById('dpFriction').textContent = data.friction || '';
+
+        // Growth
+        document.getElementById('dpGrowth').textContent = data.growth || '';
+
+        // Links
+        document.getElementById('dpDetail').href = 'personality.html?type=' + type;
+        document.getElementById('dpCombo').href = 'combos.html?type=' + type;
+        document.getElementById('dpReact').href = 'index.html?mbti1=' + type;
+
+        var panel = document.getElementById('detailPanel');
+        panel.classList.remove('show');
+        void panel.offsetWidth;
+        panel.classList.add('show');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    </script>
+</body>
+</html>

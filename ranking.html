@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最佳CP排行榜 - MBTI分子</title>
+    <meta name="description" content="基于化学反应匹配度的MBTI最佳CP排行榜，看看哪些人格组合最契合。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="最佳CP排行榜 - MBTI分子">
+    <meta property="og:description" content="基于化学反应匹配度的MBTI最佳CP排行榜，看看哪些人格组合最契合。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="最佳CP排行榜 - MBTI分子">
+    <meta name="twitter:description" content="基于化学反应匹配度的MBTI最佳CP排行榜，看看哪些人格组合最契合。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif; background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 40px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 700px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+        header { text-align: center; margin-bottom: 10px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .subtitle { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.2em; }
+        .divider { text-align: center; margin: 25px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+
+        .filter-row {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .filter-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em;
+            padding: 8px 16px; border: 1px solid rgba(45,42,38,0.3); background: transparent;
+            color: var(--text-sub); cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .rank-list { display: flex; flex-direction: column; gap: 0; }
+
+        .rank-item {
+            display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+            border: 1px solid rgba(45,42,38,0.15); border-top: none;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--text);
+        }
+        .rank-item:first-child { border-top: 1px solid rgba(45,42,38,0.15); }
+        .rank-item:hover { background: rgba(196,92,62,0.05); border-color: var(--accent); }
+
+        .rank-num {
+            font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900;
+            min-width: 36px; text-align: center; color: var(--text-sub);
+        }
+        .rank-item:nth-child(1) .rank-num { color: #C45C3E; }
+        .rank-item:nth-child(2) .rank-num { color: #8B7355; }
+        .rank-item:nth-child(3) .rank-num { color: #6B6560; }
+
+        .rank-pair {
+            flex: 1; min-width: 0;
+        }
+        .rank-types {
+            font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
+            letter-spacing: 0.05em; margin-bottom: 3px;
+        }
+        .rank-types .rt-elem { font-size: 0.85rem; margin: 0 2px; }
+        .rank-types .rt-sym { color: var(--accent); margin: 0 6px; font-size: 0.9rem; }
+        .rank-title {
+            font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--accent);
+            letter-spacing: 0.05em; margin-bottom: 2px;
+        }
+        .rank-desc { font-size: 0.8rem; color: var(--text-sub); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .rank-score {
+            min-width: 60px; text-align: center;
+        }
+        .score-val {
+            font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700;
+        }
+        .score-bar { height: 3px; background: rgba(45,42,38,0.1); margin-top: 4px; }
+        .score-fill { height: 100%; transition: width 0.6s ease; }
+
+        .rank-badge {
+            font-size: 1.2rem; min-width: 30px; text-align: center;
+        }
+
+        footer {
+            text-align: center; margin-top: 60px; padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2); font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.2em;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .rank-item { flex-wrap: wrap; gap: 10px; padding: 14px 16px; }
+            .rank-desc { white-space: normal; }
+            .rank-score { align-self: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+        <header role="banner">
+            <h1>最佳 CP 排行榜</h1>
+            <p class="subtitle">基于化学反应匹配度排名</p>
+        </header>
+        <div class="divider">─═══⚗️═══─</div>
+        <div class="filter-row" id="filterRow" role="tablist" aria-label="按强度筛选"></div>
+        <div class="rank-list" id="rankList" role="list" aria-label="CP排行列表"></div>
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+    <script src="scripts/data.js"></script>
+    <script>
+        var allPairs = [];
+        var currentFilter = 'all';
+
+        function buildPairs() {
+            var seen = {};
+            var keys = Object.keys(reactions);
+            keys.forEach(function(key) {
+                var parts = key.split('×');
+                if (parts.length !== 2) return;
+                var t1 = parts[0], t2 = parts[1];
+                var norm = [t1, t2].sort().join('×');
+                if (seen[norm]) return;
+                seen[norm] = true;
+                var data = reactions[key];
+                var c1 = categories[t1] || '';
+                var c2 = categories[t2] || '';
+                allPairs.push({ t1: t1, t2: t2, data: data, cat1: c1, cat2: c2 });
+            });
+            allPairs.sort(function(a, b) { return b.data.match - a.data.match; });
+        }
+
+        function renderFilters() {
+            var row = document.getElementById('filterRow');
+            var cats = [
+                { key: 'all', label: '全部' },
+                { key: 'explosive', label: '💥 爆炸' },
+                { key: 'dramatic', label: '⚡ 剧烈' },
+                { key: 'mild', label: '✨ 温和' },
+                { key: 'calm', label: '🌊 平静' },
+                { key: 'frozen', label: '❄️ 冰封' }
+            ];
+            row.innerHTML = cats.map(function(c) {
+                return '<button class="filter-btn' + (c.key === currentFilter ? ' active' : '') +
+                    '" role="tab" aria-selected="' + (c.key === currentFilter ? 'true' : 'false') + '" data-filter="' + c.key + '">' + c.label + '</button>';
+            }).join('');
+            row.querySelectorAll('.filter-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    currentFilter = btn.getAttribute('data-filter');
+                    renderFilters();
+                    renderList();
+                });
+            });
+        }
+
+        function renderList() {
+            var list = document.getElementById('rankList');
+            var filtered = allPairs;
+            if (currentFilter !== 'all') {
+                filtered = allPairs.filter(function(p) { return p.data.intensity === currentFilter; });
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-sub);font-size:0.9rem;">暂无数据</div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(function(p, i) {
+                var color = intensityColors[p.data.intensity] || intensityColors.mild;
+                var icons = {explosive:'💥',dramatic:'⚡',mild:'✨',calm:'🌊',frozen:'❄️'};
+                var icon = icons[p.data.intensity] || '✨';
+                var desc = p.data.desc.length > 60 ? p.data.desc.substring(0, 60) + '...' : p.data.desc;
+                var rank = i + 1;
+                return '<a class="rank-item" role="listitem" href="index.html?mbti1=' + p.t1 + '&mbti2=' + p.t2 + '" aria-label="第' + rank + '名 ' + p.t1 + '与' + p.t2 + ' 匹配度' + p.data.match + '%">' +
+                    '<div class="rank-num">' + rank + '</div>' +
+                    '<div class="rank-badge">' + icon + '</div>' +
+                    '<div class="rank-pair">' +
+                    '<div class="rank-types"><span class="rt-elem">' + mbtiElements[p.t1] + '</span>' + p.t1 +
+                    '<span class="rt-sym">⚗</span>' +
+                    '<span class="rt-elem">' + mbtiElements[p.t2] + '</span>' + p.t2 + '</div>' +
+                    '<div class="rank-title">' + p.data.title + '</div>' +
+                    '<div class="rank-desc">' + desc + '</div>' +
+                    '</div>' +
+                    '<div class="rank-score"><div class="score-val" style="color:' + color + '">' + p.data.match + '%</div>' +
+                    '<div class="score-bar"><div class="score-fill" style="width:' + p.data.match + '%;background:' + color + '"></div></div></div>' +
+                    '</a>';
+            }).join('');
+        }
+
+        buildPairs();
+        renderFilters();
+        renderList();
+    </script>
+</body>
+</html>

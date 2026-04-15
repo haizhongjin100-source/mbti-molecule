@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人格画像 - MBTI分子</title>
+    <meta name="description" content="输入你的名字，生成专属MBTI人格画像标签，分享你的独特人格色彩。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="人格画像 - MBTI分子">
+    <meta property="og:description" content="输入你的名字，生成专属MBTI人格画像标签，分享你的独特人格色彩。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="人格画像 - MBTI分子">
+    <meta name="twitter:description" content="输入你的名字，生成专属MBTI人格画像标签，分享你的独特人格色彩。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif; background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 40px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 600px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+        header { text-align: center; margin-bottom: 10px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .subtitle { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.2em; }
+        .divider { text-align: center; margin: 25px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+
+        .input-section {
+            background: var(--bg); border: 1px solid var(--text); padding: 40px 30px;
+            position: relative; margin-bottom: 20px;
+        }
+        .input-section::before { content: '◇'; position: absolute; top: -8px; left: 20px; background: var(--bg); padding: 0 10px; font-size: 0.8rem; color: var(--text-sub); }
+        .input-section::after { content: '◇'; position: absolute; bottom: -8px; right: 20px; background: var(--bg); padding: 0 10px; font-size: 0.8rem; color: var(--text-sub); }
+
+        .input-label {
+            font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub);
+            letter-spacing: 0.2em; text-align: center; margin-bottom: 15px;
+        }
+        .input-row {
+            display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;
+        }
+        .name-input {
+            font-family: 'Noto Serif SC', serif; font-size: 1rem; padding: 12px 18px;
+            border: 2px solid var(--text); background: transparent; color: var(--text);
+            outline: none; width: 200px; text-align: center; letter-spacing: 0.05em;
+        }
+        .name-input:focus { border-color: var(--accent); }
+        .name-input::placeholder { color: rgba(45,42,38,0.3); font-size: 0.85rem; }
+
+        .gen-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em;
+            padding: 12px 24px; border: 2px solid var(--accent); background: var(--accent);
+            color: #fff; cursor: pointer; transition: all 0.2s;
+        }
+        .gen-btn:hover { background: var(--dark); border-color: var(--dark); }
+
+        .result-area { display: none; }
+        .result-area.show { display: block; }
+
+        /* Portrait card */
+        .portrait-card {
+            background: var(--bg); border: 2px solid var(--text); padding: 0;
+            position: relative; margin-bottom: 20px; overflow: hidden;
+        }
+
+        .pc-header {
+            padding: 30px 30px 15px; text-align: center;
+            border-bottom: 1px dashed rgba(45,42,38,0.2);
+        }
+        .pc-name {
+            font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900;
+            letter-spacing: 0.08em; margin-bottom: 4px;
+        }
+        .pc-subtitle {
+            font-family: 'Space Mono', monospace; font-size: 0.55rem; color: var(--text-sub);
+            letter-spacing: 0.2em;
+        }
+
+        .pc-body { padding: 25px 30px; }
+
+        .pc-type-row {
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            margin-bottom: 20px;
+        }
+        .pc-element { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .pc-element img { width: 80px; height: 80px; object-fit: contain; }
+        .pc-type-info { text-align: left; }
+        .pc-mbti {
+            font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900;
+            letter-spacing: 0.1em; color: var(--accent);
+        }
+        .pc-cname {
+            font-family: 'Space Mono', monospace; font-size: 0.8rem;
+            color: var(--accent); letter-spacing: 0.15em;
+        }
+        .pc-cat {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.6rem;
+            color: var(--text-sub); border: 1px dashed var(--text-sub);
+            padding: 3px 10px; letter-spacing: 0.1em; margin-top: 4px;
+        }
+
+        .pc-divider {
+            text-align: center; margin: 15px 0;
+            font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); opacity: 0.5; letter-spacing: 0.3em;
+        }
+
+        .pc-traits {
+            text-align: center; margin-bottom: 15px;
+        }
+        .pc-trait-tag {
+            display: inline-block; padding: 5px 12px; border: 1px dashed var(--green);
+            color: var(--green); font-size: 0.78rem; margin: 3px;
+        }
+
+        .pc-desc {
+            font-size: 0.88rem; line-height: 1.9; color: var(--text);
+            text-align: center; padding: 0 10px; margin-bottom: 15px;
+        }
+
+        .pc-stats {
+            display: flex; justify-content: space-around; padding: 10px 0;
+        }
+        .pc-stat {
+            text-align: center;
+        }
+        .pc-stat-val {
+            font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
+            color: var(--accent);
+        }
+        .pc-stat-label {
+            font-family: 'Space Mono', monospace; font-size: 0.5rem; color: var(--text-sub);
+            letter-spacing: 0.05em; margin-top: 2px;
+        }
+
+        .pc-footer {
+            text-align: center; padding: 12px; border-top: 1px dashed rgba(45,42,38,0.2);
+            font-family: 'Space Mono', monospace; font-size: 0.5rem; color: var(--text-sub);
+            letter-spacing: 0.15em;
+        }
+
+        /* Corner decorations */
+        .pc-corner {
+            position: absolute; width: 20px; height: 20px;
+            border-color: var(--text); border-style: solid;
+        }
+        .pc-corner.tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+        .pc-corner.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+        .pc-corner.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+        .pc-corner.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+        .action-row {
+            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+        }
+        .action-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+            padding: 12px 24px; border: 2px solid var(--text); background: transparent;
+            color: var(--text); cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block;
+        }
+        .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .action-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .action-btn.primary:hover { background: var(--dark); border-color: var(--dark); }
+
+        /* Dimension badges */
+        .dim-badges {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;
+        }
+        .dim-badge {
+            text-align: center; padding: 8px 12px;
+            border: 1px solid rgba(45,42,38,0.2); width: 70px;
+        }
+        .dim-letter {
+            font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700;
+            color: var(--accent);
+        }
+        .dim-name {
+            font-family: 'Space Mono', monospace; font-size: 0.5rem; color: var(--text-sub);
+            letter-spacing: 0.05em; margin-top: 2px;
+        }
+
+        footer {
+            text-align: center; margin-top: 60px; padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2); font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.2em;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .input-section { padding: 30px 20px; }
+            .input-row { flex-direction: column; }
+            .name-input { width: 100%; }
+            .pc-header { padding: 20px; }
+            .pc-body { padding: 20px; }
+            .pc-name { font-size: 1.5rem; }
+            .pc-mbti { font-size: 1.8rem; }
+            .action-row { flex-direction: column; }
+            .action-btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+        <header role="banner">
+            <h1>人格画像</h1>
+            <p class="subtitle">生成你的专属人格标签</p>
+        </header>
+        <div class="divider">─═══⚗️═══─</div>
+
+        <div class="input-section" role="region" aria-label="输入信息">
+            <div class="input-label">输入实验对象名称</div>
+            <div class="input-row">
+                <input class="name-input" type="text" id="nameInput" placeholder="请输入你的名字" maxlength="10" aria-label="输入姓名">
+                <select class="name-input" id="typeSelect" style="width:140px;font-family:'Space Mono',monospace;font-size:0.8rem" aria-label="选择MBTI类型">
+                    <option value="">选择类型</option>
+                </select>
+                <button class="gen-btn" onclick="generate()" aria-label="生成人格画像">生成画像</button>
+            </div>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="portrait-card" id="portraitCard">
+                <div class="pc-corner tl"></div>
+                <div class="pc-corner tr"></div>
+                <div class="pc-corner bl"></div>
+                <div class="pc-corner br"></div>
+
+                <div class="pc-header">
+                    <div class="pc-name" id="pcName"></div>
+                    <div class="pc-subtitle">人格画像 · MBTI分子实验室</div>
+                </div>
+
+                <div class="pc-body">
+                    <div class="pc-type-row">
+                        <div class="pc-element" id="pcElement"></div>
+                        <div class="pc-type-info">
+                            <div class="pc-mbti" id="pcMbti"></div>
+                            <div class="pc-cname" id="pcCname"></div>
+                            <div class="pc-cat" id="pcCat"></div>
+                        </div>
+                    </div>
+
+                    <div class="dim-badges" id="pcDims"></div>
+
+                    <div class="pc-divider">─═══⚗️═══─</div>
+
+                    <div class="pc-traits" id="pcTraits"></div>
+
+                    <div class="pc-desc" id="pcDesc"></div>
+
+                    <div class="pc-stats" id="pcStats">
+                        <div class="pc-stat">
+                            <div class="pc-stat-val" id="pcStat1">--</div>
+                            <div class="pc-stat-label">沟通</div>
+                        </div>
+                        <div class="pc-stat">
+                            <div class="pc-stat-val" id="pcStat2">--</div>
+                            <div class="pc-stat-label">社交</div>
+                        </div>
+                        <div class="pc-stat">
+                            <div class="pc-stat-val" id="pcStat3">--</div>
+                            <div class="pc-stat-label">创造</div>
+                        </div>
+                        <div class="pc-stat">
+                            <div class="pc-stat-val" id="pcStat4">--</div>
+                            <div class="pc-stat-label">执行</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pc-footer">⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</div>
+            </div>
+
+            <div class="action-row">
+                <button class="action-btn primary" onclick="savePortrait()" aria-label="保存人格画像为图片">保存图片</button>
+                <button class="action-btn" onclick="generate()" aria-label="重新生成">换一个</button>
+                <a class="action-btn" id="goReaction" href="#">测试化学反应</a>
+                <a class="action-btn" id="goDetail" href="#">查看详情</a>
+            </div>
+        </div>
+
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+    (function() {
+        var typeSelect = document.getElementById('typeSelect');
+        var types = Object.keys(mbtiNames);
+        types.forEach(function(t) {
+            var opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = mbtiElements[t] + ' ' + t + ' ' + mbtiNames[t];
+            typeSelect.appendChild(opt);
+        });
+
+        var dimNames = {
+            E: '外向', I: '内向',
+            S: '实感', N: '直觉',
+            T: '理性', F: '感性',
+            J: '计划', P: '随性'
+        };
+
+        function hashStr(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        function inferType(name) {
+            var h = hashStr(name);
+            var dims = ['EI', 'SN', 'TF', 'JP'];
+            var result = '';
+            dims.forEach(function(dim) {
+                result += dim[h % 2];
+                h = Math.floor(h / 2);
+            });
+            return result;
+        }
+
+        function getStatScores(type) {
+            // Generate personality stats from type dimensions
+            var base = hashStr(type);
+            var stats = [];
+            for (var i = 0; i < 4; i++) {
+                stats.push(40 + (base % 55));
+                base = Math.floor(base / 3);
+            }
+            // Adjust by type
+            if (type[0] === 'E') stats[1] = Math.min(95, stats[1] + 15);
+            if (type[1] === 'N') stats[2] = Math.min(95, stats[2] + 15);
+            if (type[2] === 'T') stats[0] = Math.min(95, stats[0] + 10);
+            if (type[3] === 'J') stats[3] = Math.min(95, stats[3] + 15);
+            return stats;
+        }
+
+        window.generate = function() {
+            var name = document.getElementById('nameInput').value.trim();
+            if (!name) {
+                alert('请输入名字');
+                return;
+            }
+
+            var selectedType = typeSelect.value;
+            var type = selectedType || inferType(name);
+            var data = mbtiPersonality[type];
+            if (!data) return;
+
+            // Fill card
+            document.getElementById('pcName').textContent = name;
+            document.getElementById('pcElement').innerHTML = '<img src="images/' + type + '.png" alt="' + type + ' ' + data.name + '">';
+            document.getElementById('pcMbti').textContent = type;
+            document.getElementById('pcCname').textContent = data.name;
+            document.getElementById('pcCat').textContent = data.category;
+
+            // Dimension badges
+            var dimsHtml = '';
+            for (var i = 0; i < 4; i++) {
+                var letter = type[i];
+                dimsHtml += '<div class="dim-badge"><div class="dim-letter">' + letter + '</div><div class="dim-name">' + dimNames[letter] + '</div></div>';
+            }
+            document.getElementById('pcDims').innerHTML = dimsHtml;
+
+            // Traits
+            var traitsHtml = data.traits.map(function(t) {
+                return '<span class="pc-trait-tag">' + t + '</span>';
+            }).join('');
+            document.getElementById('pcTraits').innerHTML = traitsHtml;
+
+            // Description (first 80 chars of overview)
+            var desc = data.overview;
+            document.getElementById('pcDesc').textContent = desc;
+
+            // Stats
+            var scores = getStatScores(type);
+            document.getElementById('pcStat1').textContent = scores[0] + '%';
+            document.getElementById('pcStat2').textContent = scores[1] + '%';
+            document.getElementById('pcStat3').textContent = scores[2] + '%';
+            document.getElementById('pcStat4').textContent = scores[3] + '%';
+
+            // Links
+            document.getElementById('goReaction').href = 'index.html?mbti1=' + type;
+            document.getElementById('goDetail').href = 'personality.html?type=' + type;
+
+            // Show result
+            var area = document.getElementById('resultArea');
+            area.classList.add('show');
+            area.style.animation = 'fadeUp 0.4s ease-out';
+        };
+
+        window.savePortrait = function() {
+            var card = document.getElementById('portraitCard');
+            html2canvas(card, {
+                backgroundColor: '#F5F0E8', scale: 2, useCORS: true, logging: false
+            }).then(function(canvas) {
+                var link = document.createElement('a');
+                var name = document.getElementById('pcName').textContent || 'portrait';
+                link.download = 'MBTI人格画像_' + name + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(function() {
+                alert('图片生成失败，请尝试截图保存');
+            });
+        };
+
+        // Style for fadeUp
+        var style = document.createElement('style');
+        style.textContent = '@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }';
+        document.head.appendChild(style);
+
+        // Auto-generate if URL has params
+        var params = new URLSearchParams(window.location.search);
+        var urlName = params.get('name');
+        var urlType = params.get('type');
+        if (urlName) {
+            document.getElementById('nameInput').value = urlName;
+            if (urlType) typeSelect.value = urlType;
+            generate();
+        }
+    })();
+    </script>
+</body>
+</html>

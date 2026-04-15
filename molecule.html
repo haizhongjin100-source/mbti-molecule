@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分子图谱 - MBTI分子</title>
+    <meta name="description" content="16种MBTI人格的关系分子图谱，可视化展示人格之间的化学反应网络。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="分子图谱 - MBTI分子">
+    <meta property="og:description" content="16种MBTI人格的关系分子图谱，可视化展示人格之间的化学反应网络。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="MBTI分子">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="分子图谱 - MBTI分子">
+    <meta name="twitter:description" content="16种MBTI人格的关系分子图谱，可视化展示人格之间的化学反应网络。">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+            --explosive: #D64933; --dramatic: #C45C3E;
+            --mild: #7A8B6E; --calm: #5B7A8C; --frozen: #4A4A4A;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif; background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 40px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+        header { text-align: center; margin-bottom: 10px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .subtitle { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.2em; }
+        .divider { text-align: center; margin: 25px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+
+        .graph-box {
+            background: var(--bg); border: 1px solid var(--text); padding: 20px;
+            position: relative; margin-bottom: 20px;
+        }
+        .graph-box::before { content: '◇'; position: absolute; top: -8px; left: 20px; background: var(--bg); padding: 0 10px; font-size: 0.8rem; color: var(--text-sub); }
+        .graph-box::after { content: '◇'; position: absolute; bottom: -8px; right: 20px; background: var(--bg); padding: 0 10px; font-size: 0.8rem; color: var(--text-sub); }
+
+        canvas { display: block; width: 100%; cursor: grab; touch-action: none; }
+        canvas:active { cursor: grabbing; }
+
+        .legend {
+            display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+            margin-bottom: 15px; padding: 12px 0;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 6px;
+            font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub);
+            letter-spacing: 0.05em;
+        }
+        .legend-dot {
+            width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .filter-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em;
+            padding: 8px 16px; border: 1px solid rgba(45,42,38,0.3); background: transparent;
+            color: var(--text-sub); cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .info-panel {
+            display: none; background: rgba(255,255,255,0.6); border: 1px solid rgba(45,42,38,0.2);
+            padding: 15px 20px; margin-top: 15px; font-size: 0.85rem; line-height: 1.8;
+        }
+        .info-panel.show { display: block; }
+        .info-panel .info-title {
+            font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
+            margin-bottom: 5px; color: var(--accent);
+        }
+        .info-panel .info-type {
+            font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text-sub);
+            letter-spacing: 0.1em; margin-bottom: 8px;
+        }
+
+        .tip-text {
+            text-align: center; font-family: 'Space Mono', monospace; font-size: 0.6rem;
+            color: var(--text-sub); letter-spacing: 0.1em; margin-top: 10px; opacity: 0.7;
+        }
+
+        footer {
+            text-align: center; margin-top: 60px; padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2); font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.2em;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .graph-box { padding: 10px; }
+            .legend { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+        <header role="banner">
+            <h1>分子图谱</h1>
+            <p class="subtitle">16 种人格的关系网络</p>
+        </header>
+        <div class="divider">─═══⚗️═══─</div>
+
+        <div class="legend" role="list" aria-label="分组图例">
+            <div class="legend-item" role="listitem"><div class="legend-dot" style="background:#D64933"></div>理性者</div>
+            <div class="legend-item" role="listitem"><div class="legend-dot" style="background:#C45C3E"></div>理想主义者</div>
+            <div class="legend-item" role="listitem"><div class="legend-dot" style="background:#7A8B6E"></div>守护者</div>
+            <div class="legend-item" role="listitem"><div class="legend-dot" style="background:#5B7A8C"></div>探险者</div>
+        </div>
+
+        <div class="filter-row" id="filterRow" role="tablist" aria-label="连线筛选"></div>
+
+        <div class="graph-box">
+            <canvas id="graphCanvas" role="img" aria-label="MBTI人格关系分子图谱"></canvas>
+            <div class="info-panel" id="infoPanel">
+                <div class="info-title" id="infoTitle"></div>
+                <div class="info-type" id="infoType"></div>
+                <div id="infoContent"></div>
+            </div>
+        </div>
+        <div class="tip-text">点击节点查看详情 · 拖拽节点调整布局 · 滚轮缩放</div>
+
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+    (function() {
+        var canvas = document.getElementById('graphCanvas');
+        var ctx = canvas.getContext('2d');
+        var infoPanel = document.getElementById('infoPanel');
+
+        // --- Category colors ---
+        var catColors = {
+            '理性者': '#D64933',
+            '理想主义者': '#C45C3E',
+            '守护者': '#7A8B6E',
+            '探险者': '#5B7A8C'
+        };
+
+        // --- Build nodes ---
+        var types = Object.keys(mbtiNames);
+        var nodes = [];
+        var centerX, centerY;
+        var scale = 1;
+        var offsetX = 0, offsetY = 0;
+
+        function initNodes() {
+            var dpr = window.devicePixelRatio || 1;
+            var rect = canvas.parentElement.getBoundingClientRect();
+            var w = rect.width - 40;
+            var h = Math.min(w * 0.7, 550);
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.height = h + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            centerX = w / 2;
+            centerY = h / 2;
+
+            // Arrange in 4 clusters by category
+            var clusters = {};
+            types.forEach(function(t) {
+                var cat = categories[t] || '';
+                if (!clusters[cat]) clusters[cat] = [];
+                clusters[cat].push(t);
+            });
+            var clusterKeys = Object.keys(clusters);
+            var clusterAngles = {};
+            clusterKeys.forEach(function(k, i) {
+                clusterAngles[k] = (i / clusterKeys.length) * Math.PI * 2 - Math.PI / 2;
+            });
+
+            nodes = [];
+            var radius = Math.min(w, h) * 0.35;
+            types.forEach(function(t) {
+                var cat = categories[t] || '';
+                var cluster = clusters[cat];
+                var idx = cluster.indexOf(t);
+                var baseAngle = clusterAngles[cat];
+                var spread = 0.5;
+                var angle = baseAngle + (idx - (cluster.length - 1) / 2) * spread / cluster.length * 2;
+                nodes.push({
+                    type: t,
+                    name: mbtiNames[t],
+                    element: mbtiElements[t],
+                    category: cat,
+                    color: catColors[cat] || '#C45C3E',
+                    typeColor: mbtiColors[t] || '#C45C3E',
+                    x: centerX + Math.cos(angle) * radius + (Math.random() - 0.5) * 30,
+                    y: centerY + Math.sin(angle) * radius + (Math.random() - 0.5) * 30,
+                    vx: 0, vy: 0,
+                    radius: 22,
+                    dragging: false
+                });
+            });
+        }
+
+        // --- Build edges ---
+        var allEdges = [];
+        var currentFilter = 'all';
+
+        function buildEdges() {
+            allEdges = [];
+            var seen = {};
+            var keys = Object.keys(reactions);
+            keys.forEach(function(key) {
+                var parts = key.split('×');
+                if (parts.length !== 2) return;
+                var t1 = parts[0], t2 = parts[1];
+                var norm = [t1, t2].sort().join('×');
+                if (seen[norm]) return;
+                seen[norm] = true;
+                var data = reactions[key];
+                if (!data) return;
+                allEdges.push({
+                    t1: t1, t2: t2,
+                    match: data.match,
+                    intensity: data.intensity,
+                    title: data.title
+                });
+            });
+        }
+
+        function getFilteredEdges() {
+            if (currentFilter === 'all') return allEdges;
+            if (currentFilter === 'top') return allEdges.filter(function(e) { return e.match >= 85; });
+            return allEdges.filter(function(e) { return e.intensity === currentFilter; });
+        }
+
+        // --- Filters ---
+        function renderFilters() {
+            var row = document.getElementById('filterRow');
+            var cats = [
+                { key: 'all', label: '全部连线' },
+                { key: 'top', label: '高匹配 (85%+)' },
+                { key: 'explosive', label: '💥 爆炸' },
+                { key: 'dramatic', label: '⚡ 剧烈' },
+                { key: 'mild', label: '✨ 温和' },
+                { key: 'calm', label: '🌊 平静' },
+                { key: 'frozen', label: '❄️ 冰封' }
+            ];
+            row.innerHTML = cats.map(function(c) {
+                return '<button class="filter-btn' + (c.key === currentFilter ? ' active' : '') +
+                    '" role="tab" aria-selected="' + (c.key === currentFilter ? 'true' : 'false') +
+                    '" data-filter="' + c.key + '">' + c.label + '</button>';
+            }).join('');
+            row.querySelectorAll('.filter-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    currentFilter = btn.getAttribute('data-filter');
+                    renderFilters();
+                });
+            });
+        }
+
+        // --- Physics simulation (force-directed) ---
+        function simulate() {
+            var edges = getFilteredEdges();
+            var edgeMap = {};
+            edges.forEach(function(e) {
+                edgeMap[e.t1 + '×' + e.t2] = e;
+                edgeMap[e.t2 + '×' + e.t1] = e;
+            });
+
+            // Attraction along edges
+            edges.forEach(function(e) {
+                var n1 = nodes.find(function(n) { return n.type === e.t1; });
+                var n2 = nodes.find(function(n) { return n.type === e.t2; });
+                if (!n1 || !n2) return;
+                var dx = n2.x - n1.x;
+                var dy = n2.y - n1.y;
+                var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                var idealDist = 100 + (100 - e.match) * 1.2;
+                var force = (dist - idealDist) * 0.003;
+                n1.vx += dx / dist * force;
+                n1.vy += dy / dist * force;
+                n2.vx -= dx / dist * force;
+                n2.vy -= dy / dist * force;
+            });
+
+            // Repulsion between all nodes
+            for (var i = 0; i < nodes.length; i++) {
+                for (var j = i + 1; j < nodes.length; j++) {
+                    var dx = nodes[j].x - nodes[i].x;
+                    var dy = nodes[j].y - nodes[i].y;
+                    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    var force = -800 / (dist * dist);
+                    nodes[i].vx += dx / dist * force;
+                    nodes[i].vy += dy / dist * force;
+                    nodes[j].vx -= dx / dist * force;
+                    nodes[j].vy -= dy / dist * force;
+                }
+            }
+
+            // Center gravity
+            nodes.forEach(function(n) {
+                if (n.dragging) return;
+                n.vx += (centerX - n.x) * 0.001;
+                n.vy += (centerY - n.y) * 0.001;
+                n.vx *= 0.85;
+                n.vy *= 0.85;
+                n.x += n.vx;
+                n.y += n.vy;
+            });
+        }
+
+        // --- Render ---
+        var hoveredNode = null;
+        var selectedNode = null;
+
+        function getEdgeColor(intensity) {
+            var colors = {explosive:'#D64933',dramatic:'#C45C3E',mild:'#7A8B6E',calm:'#5B7A8C',frozen:'#4A4A4A'};
+            return colors[intensity] || '#7A8B6E';
+        }
+
+        function draw() {
+            var dpr = window.devicePixelRatio || 1;
+            var w = canvas.width / dpr;
+            var h = canvas.height / dpr;
+            ctx.clearRect(0, 0, w, h);
+            ctx.save();
+
+            var edges = getFilteredEdges();
+            var edgeMap = {};
+            edges.forEach(function(e) {
+                edgeMap[e.t1 + '×' + e.t2] = e;
+                edgeMap[e.t2 + '×' + e.t1] = e;
+            });
+
+            // Draw edges
+            edges.forEach(function(e) {
+                var n1 = nodes.find(function(n) { return n.type === e.t1; });
+                var n2 = nodes.find(function(n) { return n.type === e.t2; });
+                if (!n1 || !n2) return;
+                var isHighlight = selectedNode && (selectedNode.type === e.t1 || selectedNode.type === e.t2);
+                var isHover = hoveredNode && (hoveredNode.type === e.t1 || hoveredNode.type === e.t2);
+                var alpha = isHighlight ? 0.7 : (isHover ? 0.5 : (selectedNode ? 0.08 : 0.15));
+                var lineW = isHighlight ? 2.5 : (isHover ? 2 : 1);
+
+                ctx.beginPath();
+                ctx.moveTo(n1.x, n1.y);
+                ctx.lineTo(n2.x, n2.y);
+                ctx.strokeStyle = getEdgeColor(e.intensity);
+                ctx.globalAlpha = alpha;
+                ctx.lineWidth = lineW;
+                ctx.stroke();
+
+                // Match label on highlighted edges
+                if (isHighlight && isHover) {
+                    var mx = (n1.x + n2.x) / 2;
+                    var my = (n1.y + n2.y) / 2;
+                    ctx.globalAlpha = 0.9;
+                    ctx.font = '600 11px "Space Mono", monospace';
+                    ctx.fillStyle = getEdgeColor(e.intensity);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(e.match + '%', mx, my - 8);
+                    ctx.font = '10px "Noto Serif SC", serif';
+                    ctx.fillStyle = '#6B6560';
+                    ctx.fillText(e.title, mx, my + 6);
+                }
+            });
+
+            ctx.globalAlpha = 1;
+
+            // Draw nodes
+            nodes.forEach(function(n) {
+                var isSelected = selectedNode && selectedNode.type === n.type;
+                var isHover = hoveredNode && hoveredNode.type === n.type;
+                var dimmed = selectedNode && !isSelected && !edgeMap[selectedNode.type + '×' + n.type];
+                var r = isHover ? n.radius + 4 : (isSelected ? n.radius + 2 : n.radius);
+
+                // Outer glow
+                if (isSelected || isHover) {
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
+                    ctx.fillStyle = n.color;
+                    ctx.globalAlpha = 0.12;
+                    ctx.fill();
+                }
+
+                // Node circle
+                ctx.globalAlpha = dimmed ? 0.2 : 1;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = isSelected || isHover ? n.color : '#F5F0E8';
+                ctx.fill();
+                ctx.strokeStyle = n.typeColor || n.color;
+                ctx.lineWidth = isSelected || isHover ? 2.5 : 1.5;
+                ctx.stroke();
+
+                // Element icon
+                ctx.font = (r * 0.7) + 'px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = isSelected || isHover ? '#fff' : (n.typeColor || n.color);
+                ctx.fillText(n.element, n.x, n.y - 2);
+
+                // Type label below
+                ctx.font = '600 ' + (isHover ? '10px' : '9px') + ' "Space Mono", monospace';
+                ctx.fillStyle = dimmed ? 'rgba(45,42,38,0.2)' : '#2D2A26';
+                ctx.fillText(n.type, n.x, n.y + r + 12);
+            });
+
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
+
+        // --- Interaction ---
+        function getNodeAt(mx, my) {
+            for (var i = nodes.length - 1; i >= 0; i--) {
+                var n = nodes[i];
+                var dx = mx - n.x;
+                var dy = my - n.y;
+                if (dx * dx + dy * dy <= (n.radius + 5) * (n.radius + 5)) return n;
+            }
+            return null;
+        }
+
+        function getMousePos(e) {
+            var rect = canvas.getBoundingClientRect();
+            var dpr = window.devicePixelRatio || 1;
+            return {
+                x: (e.clientX - rect.left),
+                y: (e.clientY - rect.top)
+            };
+        }
+
+        var dragNode = null;
+        var dragStartX = 0, dragStartY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            var pos = getMousePos(e);
+            var node = getNodeAt(pos.x, pos.y);
+            if (node) {
+                dragNode = node;
+                node.dragging = true;
+                dragStartX = pos.x - node.x;
+                dragStartY = pos.y - node.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            var pos = getMousePos(e);
+            if (dragNode) {
+                dragNode.x = pos.x - dragStartX;
+                dragNode.y = pos.y - dragStartY;
+                dragNode.vx = 0;
+                dragNode.vy = 0;
+            }
+            hoveredNode = getNodeAt(pos.x, pos.y);
+            canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            if (dragNode) {
+                dragNode.dragging = false;
+                dragNode = null;
+            }
+        });
+
+        canvas.addEventListener('click', function(e) {
+            var pos = getMousePos(e);
+            var node = getNodeAt(pos.x, pos.y);
+            if (node) {
+                if (selectedNode && selectedNode.type === node.type) {
+                    selectedNode = null;
+                    infoPanel.classList.remove('show');
+                } else {
+                    selectedNode = node;
+                    showNodeInfo(node);
+                }
+            } else {
+                selectedNode = null;
+                infoPanel.classList.remove('show');
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            var touch = e.touches[0];
+            var pos = getMousePos(touch);
+            var node = getNodeAt(pos.x, pos.y);
+            if (node) {
+                dragNode = node;
+                node.dragging = true;
+                dragStartX = pos.x - node.x;
+                dragStartY = pos.y - node.y;
+                selectedNode = node;
+                showNodeInfo(node);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            if (dragNode) {
+                var touch = e.touches[0];
+                var pos = getMousePos(touch);
+                dragNode.x = pos.x - dragStartX;
+                dragNode.y = pos.y - dragStartY;
+                dragNode.vx = 0;
+                dragNode.vy = 0;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function() {
+            if (dragNode) {
+                dragNode.dragging = false;
+                dragNode = null;
+            }
+        });
+
+        function showNodeInfo(node) {
+            infoPanel.classList.add('show');
+            document.getElementById('infoTitle').textContent = node.element + ' ' + node.type + ' ' + node.name;
+            document.getElementById('infoType').textContent = node.category;
+
+            // Find top matches
+            var edges = allEdges.filter(function(e) {
+                return e.t1 === node.type || e.t2 === node.type;
+            });
+            edges.sort(function(a, b) { return b.match - a.match; });
+            var top5 = edges.slice(0, 5);
+            var html = '<div style="margin-bottom:6px;font-family:Space Mono,monospace;font-size:0.6rem;color:var(--text-sub);letter-spacing:0.1em">TOP 5 最佳反应</div>';
+            top5.forEach(function(e, i) {
+                var other = e.t1 === node.type ? e.t2 : e.t1;
+                var color = getEdgeColor(e.intensity);
+                html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.82rem">' +
+                    '<span style="font-family:Playfair Display,serif;font-weight:700;min-width:20px;color:var(--text-sub)">' + (i + 1) + '</span>' +
+                    '<a href="index.html?mbti1=' + node.type + '&mbti2=' + other + '" style="color:var(--text);text-decoration:none;border-bottom:1px dashed ' + color + '">' +
+                    mbtiElements[other] + ' ' + other + ' ' + mbtiNames[other] + '</a>' +
+                    '<span style="margin-left:auto;font-family:Playfair Display,serif;font-weight:700;color:' + color + '">' + e.match + '%</span>' +
+                    '</div>';
+            });
+            html += '<div style="margin-top:10px"><a href="personality.html?type=' + node.type + '" style="color:var(--accent);font-size:0.8rem;text-decoration:none;border-bottom:1px dashed var(--accent)">查看完整介绍 →</a></div>';
+            document.getElementById('infoContent').innerHTML = html;
+        }
+
+        // --- Animation loop ---
+        var running = true;
+        function loop() {
+            if (!running) return;
+            simulate();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        // --- Init ---
+        function init() {
+            initNodes();
+            buildEdges();
+            renderFilters();
+            loop();
+        }
+
+        window.addEventListener('resize', function() {
+            initNodes();
+        });
+
+        init();
+    })();
+    </script>
+</body>
+</html>

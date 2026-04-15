@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人格鉴定 - MBTI分子</title>
+    <meta name="description" content="回答4道趣味问题，快速测出你的MBTI人格类型。">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+    <meta property="og:title" content="人格鉴定 - MBTI分子">
+    <meta property="og:description" content="回答4道趣味问题，快速测出你的MBTI人格类型。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary_large_image">
+    <link href="https://fonts.loli.net/css2?family=Playfair+Display:wght@400;700;900&family=Space+Mono&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F5F0E8; --dark: #1A1A1A; --accent: #C45C3E;
+            --green: #3D5A4C; --text: #2D2A26; --text-sub: #6B6560;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Serif SC', serif; background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 40px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.08; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 600px; margin: 0 auto; position: relative; z-index: 2; }
+        .back-link {
+            display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.7rem;
+            color: var(--text-sub); text-decoration: none; letter-spacing: 0.1em;
+            margin-bottom: 8px; padding: 8px 16px; border: 1px solid rgba(45,42,38,0.2); transition: all 0.2s;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); }
+
+        .quiz-box {
+            background: var(--bg); border: 1px solid var(--text); padding: 50px 40px;
+            position: relative; text-align: center;
+        }
+        .quiz-box::before, .quiz-box::after {
+            content: '◇'; position: absolute; background: var(--bg); padding: 0 10px;
+            font-size: 0.8rem; color: var(--text-sub);
+        }
+        .quiz-box::before { top: -8px; left: 20px; }
+        .quiz-box::after { bottom: -8px; right: 20px; }
+
+        .divider { text-align: center; margin: 25px 0; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-sub); opacity: 0.5; letter-spacing: 0.5em; }
+
+        /* Welcome */
+        .welcome-icon { font-size: 3rem; margin-bottom: 15px; }
+        .welcome-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.05em; }
+        .welcome-sub { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.15em; margin-bottom: 30px; }
+
+        /* Question */
+        .question-phase { display: none; }
+        .progress { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.15em; margin-bottom: 20px; }
+        .q-text { font-size: 1.1rem; line-height: 1.8; margin-bottom: 30px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn {
+            width: 100%; padding: 18px 20px; border: 1px solid rgba(45,42,38,0.3);
+            background: transparent; cursor: pointer; font-family: 'Noto Serif SC', serif;
+            font-size: 0.92rem; color: var(--text); text-align: left; line-height: 1.6; transition: all 0.2s;
+        }
+        .option-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Result */
+        .result-phase { display: none; }
+        .result-intro { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.1em; margin-bottom: 20px; }
+        .result-element { font-size: 3.5rem; margin-bottom: 8px; }
+        .result-type { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 4px; color: var(--accent); }
+        .result-name { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--accent); letter-spacing: 0.2em; margin-bottom: 6px; }
+        .result-category { display: inline-block; font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--text-sub); border: 1px dashed var(--text-sub); padding: 4px 12px; letter-spacing: 0.1em; margin-bottom: 25px; }
+        .result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .result-actions a, .result-actions button {
+            font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+            padding: 12px 24px; border: 2px solid var(--text); background: transparent;
+            color: var(--text); cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block;
+        }
+        .result-actions .primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .result-actions .primary:hover { background: var(--dark); border-color: var(--dark); }
+        .result-actions a:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Start button */
+        .start-btn {
+            font-family: 'Space Mono', monospace; font-size: 0.8rem; letter-spacing: 0.15em;
+            padding: 16px 36px; border: 2px solid var(--text); background: var(--accent);
+            color: #fff; cursor: pointer; transition: all 0.2s;
+        }
+        .start-btn:hover { background: var(--dark); border-color: var(--dark); }
+
+        /* Fade animation */
+        .fade-in { animation: fadeUp 0.4s ease-out; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        footer {
+            text-align: center; margin-top: 60px; padding-top: 25px;
+            border-top: 1px solid rgba(45,42,38,0.2); font-family: 'Space Mono', monospace;
+            font-size: 0.6rem; color: var(--text-sub); letter-spacing: 0.2em;
+        }
+        @media (max-width: 768px) {
+            .quiz-box { padding: 35px 20px; }
+            .welcome-title { font-size: 1.6rem; }
+            .result-type { font-size: 2.4rem; }
+            .result-actions { flex-direction: column; }
+            .result-actions a, .result-actions button { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html" aria-label="返回首页">← 返回实验室</a>
+        <a class="back-link" href="quiz.html" aria-label="人格鉴定">⚗ 人格鉴定</a>
+        <a class="back-link" href="combos.html" aria-label="组合全览">◇ 组合全览</a>
+        <a class="back-link" href="ranking.html" aria-label="CP排行榜">★ CP排行榜</a>
+        <a class="back-link" href="molecule.html" aria-label="分子图谱">◎ 分子图谱</a>
+        <a class="back-link" href="dorm.html" aria-label="宿舍兼容">⌂ 宿舍兼容</a>
+        <a class="back-link" href="periodic.html" aria-label="16型周期表">⬡ 周期表</a>
+
+        <div class="quiz-box" id="quizBox" role="region" aria-label="MBTI人格鉴定测试">
+            <!-- Welcome -->
+            <div id="welcomePhase">
+                <div class="welcome-icon">⚗</div>
+                <div class="welcome-title">人格鉴定实验</div>
+                <div class="welcome-sub">回答 4 道题，测出你的 MBTI 人格类型</div>
+                <div class="divider">─═══⚗️═══─</div>
+                <br>
+                <button class="start-btn" onclick="startQuiz()" aria-label="开始MBTI人格鉴定测试">开始实验</button>
+            </div>
+
+            <!-- Questions -->
+            <div id="questionPhase" class="question-phase" role="form" aria-label="测试问题">
+                <div class="progress" id="progress" aria-live="polite"></div>
+                <div class="q-text" id="qText" role="heading" aria-level="2"></div>
+                <div class="options" id="optionsContainer" role="radiogroup" aria-label="选项"></div>
+            </div>
+
+            <!-- Result -->
+            <div id="resultPhase" class="result-phase" role="region" aria-label="测试结果" aria-live="polite">
+                <div class="result-intro">经过精密的化学反应分析，你的实验结果是——</div>
+                <div class="divider">─═══⚗️═══─</div>
+                <div class="result-element" id="rElement"></div>
+                <div class="result-type" id="rType"></div>
+                <div class="result-name" id="rName"></div>
+                <div class="result-category" id="rCategory"></div>
+                <div class="divider">─═══⚗️═══─</div>
+                <div class="result-actions">
+                    <a class="primary" id="rDetail" href="#">查看详情</a>
+                    <a id="rCombo" href="#">组合全览</a>
+                    <a id="rReaction" href="#">测试化学反应</a>
+                </div>
+            </div>
+        </div>
+
+        <footer role="contentinfo"><p>⚗ MBTI分子实验室 · 仅供娱乐 · 人格无好坏</p></footer>
+    </div>
+
+    <script src="scripts/data.js"></script>
+    <script>
+        var questions = [
+            { text: "周末终于到了，你最想做什么？", dim: 'EI',
+              a: { label: "A", text: "组局！叫上朋友出去浪，人越多越嗨", value: 'E' },
+              b: { label: "B", text: "宅在家，看书刷剧发呆，享受一个人的时光", value: 'I' }
+            },
+            { text: "面对一个新问题，你更依赖？", dim: 'SN',
+              a: { label: "A", text: "经验、事实和已验证的方法，踏实靠谱", value: 'S' },
+              b: { label: "B", text: "直觉、灵感和第六感，跟着感觉走", value: 'N' }
+            },
+            { text: "朋友找你倾诉烦恼，你的第一反应是？", dim: 'TF',
+              a: { label: "A", text: "帮他分析问题，提供解决方案", value: 'T' },
+              b: { label: "B", text: "先安慰情绪，让他感到被理解和支持", value: 'F' }
+            },
+            { text: "旅行前你会怎么准备？", dim: 'JP',
+              a: { label: "A", text: "详细攻略、精确到小时的行程表，一切尽在掌握", value: 'J' },
+              b: { label: "B", text: "走哪算哪，随性而行，惊喜总在计划外", value: 'P' }
+            }
+        ];
+
+        var currentQ = 0;
+        var answers = {};
+
+        function startQuiz() {
+            currentQ = 0;
+            answers = {};
+            document.getElementById('welcomePhase').style.display = 'none';
+            document.getElementById('resultPhase').style.display = 'none';
+            var phase = document.getElementById('questionPhase');
+            phase.style.display = 'block';
+            phase.className = 'question-phase fade-in';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            var q = questions[currentQ];
+            document.getElementById('progress').textContent = (currentQ + 1) + ' / ' + questions.length;
+            document.getElementById('qText').textContent = q.text;
+            document.getElementById('optionsContainer').innerHTML =
+                '<button class="option-btn" onclick="answer(\'' + q.a.value + '\')" role="radio" aria-checked="false">' +
+                '<strong>' + q.a.label + '.</strong> ' + q.a.text + '</button>' +
+                '<button class="option-btn" onclick="answer(\'' + q.b.value + '\')" role="radio" aria-checked="false">' +
+                '<strong>' + q.b.label + '.</strong> ' + q.b.text + '</button>';
+            var phase = document.getElementById('questionPhase');
+            phase.className = 'question-phase fade-in';
+        }
+
+        function answer(value) {
+            var q = questions[currentQ];
+            answers[q.dim] = value;
+            currentQ++;
+            if (currentQ < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('questionPhase').style.display = 'none';
+            var type = (answers.EI || 'I') + (answers.SN || 'N') + (answers.TF || 'T') + (answers.JP || 'P');
+
+            var name = mbtiNames[type] || '未知';
+            var elem = mbtiElements[type] || '⚗';
+            var cat = categories[type] || '';
+
+            document.getElementById('rElement').textContent = elem;
+            document.getElementById('rType').textContent = type;
+            document.getElementById('rName').textContent = name;
+            document.getElementById('rCategory').textContent = cat;
+            document.getElementById('rDetail').href = 'personality.html?type=' + type;
+            document.getElementById('rCombo').href = 'combos.html?type=' + type;
+            document.getElementById('rReaction').href = 'index.html?mbti1=' + type;
+
+            var phase = document.getElementById('resultPhase');
+            phase.style.display = 'block';
+            phase.className = 'result-phase fade-in';
+        }
+    </script>
+</body>
+</html>
